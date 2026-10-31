@@ -311,6 +311,7 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 dist/
+.test-build/
 .env.local
 .env.*.local
 *.tsbuildinfo

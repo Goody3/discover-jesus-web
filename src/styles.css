@@ -158,6 +158,57 @@ h1, h2, h3 { font-family: "Manrope", sans-serif; }
 .alert-error { border-color: #edcfca; color: #8d3f37; background: #fff4f1; }
 .alert-success { border-color: #d6e6d4; color: #3f704a; background: #f1f8ef; }
 
+.authoring-panel { display: grid; gap: 18px; max-width: 1000px; margin: 0 auto; }
+.authoring-panel > .section-heading { margin: 0; }
+.authoring-panel h1 { margin: 7px 0; font-size: clamp(26px, 3vw, 34px); letter-spacing: -1px; }
+.authoring-card { display: grid; gap: 16px; padding: 21px; border: 1px solid #e5e8e1; border-radius: 9px; background: white; }
+.authoring-card h2 { margin: 0; font-size: 17px; letter-spacing: -.4px; }
+.panel-description { max-width: 680px; margin: 5px 0 0; color: #7d877e; font-size: 11px; line-height: 1.6; }
+.authoring-form { display: grid; gap: 15px; }
+.component-manage-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.component-name-form { display: flex; align-items: flex-end; gap: 10px; }
+.component-name-form .form-field { flex: 1; }
+.component-load-row { display: grid; grid-template-columns: minmax(210px, 1fr) 100px auto; align-items: end; gap: 10px; }
+.authoring-card > .component-load-row { grid-template-columns: minmax(110px, 180px) 1fr; }
+.reference-insert-row { grid-template-columns: minmax(210px, 1fr) auto; max-width: 650px; }
+.component-id-field, .locale-field { min-width: 0; }
+.component-load-actions { flex-wrap: wrap; }
+.authoring-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+.component-withdrawn-badge { display: inline-block; margin-top: 6px; padding: 4px 8px; border-radius: 20px; color: #8d6e33; background: #f5efdf; font-size: 10px; font-weight: 600; }
+.component-withdrawn-label { color: #e4c98e; font-size: 9px; }
+.advanced-json-editor { padding-top: 10px; border-top: 1px solid #f0f1ed; }
+.advanced-json-editor summary { color: #59645b; cursor: pointer; font-size: 11px; font-weight: 600; }
+.advanced-json-editor[open] summary { margin-bottom: 12px; }
+.revision-label { color: #427350; font-size: 10px; font-weight: 600; }
+.page-content-editor { margin: 0 0 36px; }
+.page-content-editor-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.published-reference-summary { display: grid; gap: 10px; padding: 14px 15px; border: 1px solid #e5e8e1; border-radius: 7px; background: #fafbf8; }
+.published-reference-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: #48534a; font-size: 11px; }
+.published-reference-heading span { color: #879087; font-size: 10px; }
+.published-reference-summary .field-hint { margin: 0; }
+.published-reference-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 7px 12px; margin: 0; padding: 0; list-style: none; }
+.published-reference-list li { display: flex; align-items: center; gap: 9px; min-width: 0; color: #48534a; font-size: 11px; }
+.published-reference-order { display: grid; place-items: center; width: 21px; height: 21px; flex: 0 0 21px; border-radius: 6px; color: #4a7056; background: #edf3ec; font-size: 9px; font-weight: 700; }
+.published-reference-error { margin: 0; color: #8d3f37; font-size: 11px; }
+
+.published-preview { max-width: 1000px; margin: 0 auto; }
+.preview-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+.preview-toolbar h1 { margin: 7px 0 5px; font-size: clamp(24px, 3vw, 32px); letter-spacing: -1px; }
+.preview-toolbar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.preview-locale-form { display: flex; align-items: center; gap: 7px; color: #667068; font-size: 10px; }
+.preview-locale-form input { width: 75px; padding: 9px; border: 1px solid #dfe4dc; border-radius: 5px; color: #28332b; background: white; }
+.preview-canvas { display: grid; gap: 18px; min-height: 220px; padding: clamp(20px, 5vw, 48px); border: 1px solid #e5e8e1; border-radius: 9px; background: white; }
+.preview-layout { display: flex; gap: 14px; }
+.preview-column { flex-direction: column; }
+.preview-row { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.preview-text { margin: 0; color: #303a33; font-size: 16px; line-height: 1.65; white-space: pre-wrap; }
+.preview-image { display: block; max-width: 100%; max-height: 520px; object-fit: contain; }
+.preview-button { justify-self: start; width: fit-content; text-decoration: none; }
+.preview-divider { width: 100%; border: 0; border-top: 1px solid #e6e8e1; }
+.preview-spacer { min-height: 24px; }
+.preview-notice { margin: 0; padding: 11px 13px; border: 1px solid #eadfbe; border-radius: 6px; color: #755e2f; background: #fbf7eb; font-size: 11px; line-height: 1.5; }
+.preview-error p { max-width: 520px; }
+
 .modal-backdrop { position: fixed; z-index: 5; inset: 0; display: grid; place-items: center; padding: 20px; background: rgb(24 33 27 / 48%); }
 .editor-dialog { width: min(100%, 520px); max-height: min(92vh, 760px); overflow-y: auto; border-radius: 10px; background: white; box-shadow: 0 20px 80px rgb(14 26 17 / 25%); }
 .dialog-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 22px 24px 17px; border-bottom: 1px solid #edf0ea; }
@@ -197,6 +248,15 @@ h1, h2, h3 { font-family: "Manrope", sans-serif; }
   .workspace { padding: 28px 16px 50px; }
   .page-heading { align-items: flex-start; flex-direction: column; }
   .heading-actions { flex-wrap: wrap; }
+  .component-load-row { grid-template-columns: 1fr 90px; }
+  .authoring-card > .component-load-row { grid-template-columns: 1fr; }
+  .component-name-form { align-items: stretch; flex-direction: column; }
+  .component-load-actions { grid-column: 1 / -1; }
+  .reference-insert-row { grid-template-columns: 1fr; }
+  .page-content-editor-heading { flex-direction: column; }
+  .authoring-card { padding: 15px; }
+  .preview-toolbar { align-items: flex-start; flex-direction: column; }
+  .preview-toolbar-actions { align-items: flex-start; }
   .summary-row { gap: 6px; margin-bottom: 33px; }
   .summary-card { align-items: flex-start; flex-direction: column; gap: 3px; padding: 11px 9px; font-size: 9px; }
   .summary-number { font-size: 17px; }

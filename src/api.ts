@@ -1,5 +1,6 @@
 export interface PageSummary {
   id: number;
+  publicId: string;
   slug: string;
   title: string;
   isPublished: boolean;
@@ -33,7 +34,56 @@ export interface ActionDefinition {
   config: unknown;
 }
 
+export interface PageContentResponse {
+  id: string;
+  title: string;
+  locale: string;
+  version: number;
+  sections: unknown;
+}
+
+export interface PageContentDraftResponse {
+  pageId: string;
+  locale: string;
+  sections: unknown;
+  updatedAt: string;
+}
+
+export interface ReusableComponentSummary {
+  componentId: string;
+  name: string;
+  isWithdrawn: boolean;
+  createdAt: string;
+}
+
+export interface ReusableComponentDraftResponse {
+  componentId: string;
+  name: string;
+  locale: string;
+  content: unknown;
+  updatedAt: string;
+}
+
+export interface ReusableComponentResponse {
+  componentId: string;
+  name: string;
+  locale: string;
+  revision: number;
+  content: unknown;
+  publishedAt: string;
+}
+
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
+export class ApiRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiRequestError";
+  }
+}
 
 export async function apiRequest<T>(
   path: string,
@@ -65,7 +115,7 @@ export async function apiRequest<T>(
     } catch {
       // Some error responses have no JSON body.
     }
-    throw new Error(message);
+    throw new ApiRequestError(message, response.status);
   }
 
   if (response.status === 204) return undefined as T;
