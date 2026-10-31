@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "tsc -p tsconfig.tests.json && node --test tests/*.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
