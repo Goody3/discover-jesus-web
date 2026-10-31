@@ -44,16 +44,6 @@ npm run build
 npm run preview
 ```
 
-Run the dependency-free preview and navigation tests with:
-
-```sh
-npm test
-```
-
-These tests cover supported nested content, button action forwarding and UUID
-destination resolution, plus visible failure handling for invalid or unresolved
-content.
-
 For deployments where the API is not served from the same origin, set
 `VITE_API_BASE_URL` to the API origin when building and configure the backend
 to allow the UI origin through CORS.

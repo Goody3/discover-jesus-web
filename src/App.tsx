@@ -62,6 +62,13 @@ function App() {
   const [busy, setBusy] = useState(false);
   const [loadingPages, setLoadingPages] = useState(true);
   const [loadingReusableComponents, setLoadingReusableComponents] = useState(false);
+function App() {
+  const [pages, setPages] = useState<PageSummary[]>([]);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [page, setPage] = useState<Page | null>(null);
+  const [editor, setEditor] = useState<EditorModal | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [loadingPages, setLoadingPages] = useState(true);
   const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
