@@ -64,11 +64,16 @@ function App() {
   const [loadingReusableComponents, setLoadingReusableComponents] = useState(false);
 function App() {
   const [pages, setPages] = useState<PageSummary[]>([]);
+  const [reusableComponents, setReusableComponents] = useState<ReusableComponentSummary[]>([]);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [selectedReusableComponentId, setSelectedReusableComponentId] = useState<string | null>(null);
   const [page, setPage] = useState<Page | null>(null);
+  const [previewPageId, setPreviewPageId] = useState<string | null>(null);
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("pages");
   const [editor, setEditor] = useState<EditorModal | null>(null);
   const [busy, setBusy] = useState(false);
   const [loadingPages, setLoadingPages] = useState(true);
+  const [loadingReusableComponents, setLoadingReusableComponents] = useState(false);
   const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
