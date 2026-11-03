@@ -54,19 +54,9 @@ function App() {
   const [pages, setPages] = useState<PageSummary[]>([]);
   const [reusableComponents, setReusableComponents] = useState<ReusableComponentSummary[]>([]);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
-  const [selectedReusableComponentId, setSelectedReusableComponentId] = useState<string | null>(null);
-  const [page, setPage] = useState<Page | null>(null);
-  const [previewPageId, setPreviewPageId] = useState<string | null>(null);
-  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("pages");
-  const [editor, setEditor] = useState<EditorModal | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [loadingPages, setLoadingPages] = useState(true);
-  const [loadingReusableComponents, setLoadingReusableComponents] = useState(false);
-function App() {
-  const [pages, setPages] = useState<PageSummary[]>([]);
-  const [reusableComponents, setReusableComponents] = useState<ReusableComponentSummary[]>([]);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
-  const [selectedReusableComponentId, setSelectedReusableComponentId] = useState<string | null>(null);
+  const [selectedReusableComponentId, setSelectedReusableComponentId] = useState<string | null>(
+    null,
+  );
   const [page, setPage] = useState<Page | null>(null);
   const [previewPageId, setPreviewPageId] = useState<string | null>(null);
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("pages");
@@ -78,9 +68,7 @@ function App() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [pageRefresh, setPageRefresh] = useState(0);
-  const [connection, setConnection] = useState<"checking" | "online" | "offline">(
-    "checking",
-  );
+  const [connection, setConnection] = useState<"checking" | "online" | "offline">("checking");
 
   const refreshPages = useCallback(async () => {
     setLoadingPages(true);
@@ -94,11 +82,7 @@ function App() {
       );
       setError("");
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Unable to load pages.",
-      );
+      setError(requestError instanceof Error ? requestError.message : "Unable to load pages.");
     } finally {
       setLoadingPages(false);
     }
@@ -112,9 +96,9 @@ function App() {
       setSelectedReusableComponentId((current) =>
         current && results.some((item) => item.componentId === current)
           ? current
-          : (results.find((item) => !item.isWithdrawn)?.componentId
-            ?? results[0]?.componentId
-            ?? null),
+          : (results.find((item) => !item.isWithdrawn)?.componentId ??
+            results[0]?.componentId ??
+            null),
       );
       setError("");
     } catch (requestError) {
@@ -157,9 +141,7 @@ function App() {
         if (active) {
           setPage(null);
           setError(
-            requestError instanceof Error
-              ? requestError.message
-              : "Unable to load this page.",
+            requestError instanceof Error ? requestError.message : "Unable to load this page.",
           );
         }
       })
@@ -229,10 +211,7 @@ function App() {
     });
   }
 
-  function openActionEditor(
-    existing: ActionDefinition | undefined,
-    parentId: number,
-  ) {
+  function openActionEditor(existing: ActionDefinition | undefined, parentId: number) {
     setEditor({
       kind: "action",
       title: existing ? "Edit action" : "Add an action",
@@ -252,7 +231,7 @@ function App() {
 
     const values = editor.values;
     let path = "";
-    let method = editor.id ? "PUT" : "POST";
+    const method = editor.id ? "PUT" : "POST";
     let body: Record<string, unknown>;
 
     try {
@@ -318,11 +297,7 @@ function App() {
       }
       setNotice(`${editor.title.replace(/^(Add|Create|Edit) /, "")} saved.`);
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Unable to save changes.",
-      );
+      setError(requestError instanceof Error ? requestError.message : "Unable to save changes.");
     } finally {
       setBusy(false);
     }
@@ -344,11 +319,7 @@ function App() {
       }
       setNotice(`${label[0].toUpperCase()}${label.slice(1)} deleted.`);
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : `Unable to delete ${label}.`,
-      );
+      setError(requestError instanceof Error ? requestError.message : `Unable to delete ${label}.`);
     } finally {
       setBusy(false);
     }
@@ -371,16 +342,20 @@ function App() {
         </a>
 
         <div className="sidebar-heading">
-          <span>{workspaceMode === "reusable-components" ? "COMPONENT LIBRARY" : "YOUR PAGES"}</span>
-          {workspaceMode === "pages" && <button
-            className="icon-button"
-            type="button"
-            onClick={() => openPageEditor()}
-            aria-label="Create a page"
-            title="Create a page"
-          >
-            +
-          </button>}
+          <span>
+            {workspaceMode === "reusable-components" ? "COMPONENT LIBRARY" : "YOUR PAGES"}
+          </span>
+          {workspaceMode === "pages" && (
+            <button
+              className="icon-button"
+              type="button"
+              onClick={() => openPageEditor()}
+              aria-label="Create a page"
+              title="Create a page"
+            >
+              +
+            </button>
+          )}
         </div>
 
         <nav className="page-nav" aria-label="Pages">
@@ -395,24 +370,28 @@ function App() {
           >
             <span className="page-nav-title">Reusable components</span>
           </button>
-          {workspaceMode === "reusable-components" && (
-            loadingReusableComponents && reusableComponents.length === 0 ? (
+          {workspaceMode === "reusable-components" &&
+            (loadingReusableComponents && reusableComponents.length === 0 ? (
               <p className="sidebar-empty">Loading components…</p>
             ) : reusableComponents.length === 0 ? (
               <p className="sidebar-empty">No reusable components yet.</p>
-            ) : reusableComponents.map((item) => (
-              <button
-                type="button"
-                key={item.componentId}
-                className={`page-nav-item component-nav-item${item.componentId === selectedReusableComponentId ? " active" : ""}`}
-                onClick={() => setSelectedReusableComponentId(item.componentId)}
-              >
-                <span className="page-nav-title">{item.name}</span>
-                {item.isWithdrawn
-                  ? <span className="component-withdrawn-label">Withdrawn</span>
-                  : <span className="status-dot published" />}
-              </button>
-            )))}
+            ) : (
+              reusableComponents.map((item) => (
+                <button
+                  type="button"
+                  key={item.componentId}
+                  className={`page-nav-item component-nav-item${item.componentId === selectedReusableComponentId ? " active" : ""}`}
+                  onClick={() => setSelectedReusableComponentId(item.componentId)}
+                >
+                  <span className="page-nav-title">{item.name}</span>
+                  {item.isWithdrawn ? (
+                    <span className="component-withdrawn-label">Withdrawn</span>
+                  ) : (
+                    <span className="status-dot published" />
+                  )}
+                </button>
+              ))
+            ))}
           {loadingPages && pages.length === 0 ? (
             <p className="sidebar-empty">Loading pages…</p>
           ) : pages.length === 0 ? (
@@ -438,14 +417,8 @@ function App() {
 
         <div className="sidebar-footer">
           <span className={`connection-dot ${connection}`} />
-          <span>
-            API {connection === "checking" ? "checking" : connection}
-          </span>
-          <button
-            type="button"
-            className="text-button"
-            onClick={() => void checkConnection()}
-          >
+          <span>API {connection === "checking" ? "checking" : connection}</span>
+          <button type="button" className="text-button" onClick={() => void checkConnection()}>
             Check
           </button>
         </div>
@@ -461,7 +434,7 @@ function App() {
                 ? "Reusable components"
                 : previewPageId
                   ? "Published preview"
-                  : page?.title ?? "Workspace"}
+                  : (page?.title ?? "Workspace")}
             </strong>
           </div>
           <span className="backend-label">BACKEND MANAGER</span>
@@ -498,7 +471,9 @@ function App() {
               onClose={() => setPreviewPageId(null)}
             />
           ) : loadingPage ? (
-            <div className="empty-state"><p>Loading page…</p></div>
+            <div className="empty-state">
+              <p>Loading page…</p>
+            </div>
           ) : page ? (
             <>
               <div className="page-heading">
@@ -531,9 +506,7 @@ function App() {
                     className="button button-danger-quiet"
                     type="button"
                     disabled={busy}
-                    onClick={() =>
-                      void deleteResource(`/api/pages/${page.id}`, "page", true)
-                    }
+                    onClick={() => void deleteResource(`/api/pages/${page.id}`, "page", true)}
                   >
                     Delete
                   </button>
@@ -586,8 +559,8 @@ function App() {
                   <div className="empty-icon">▤</div>
                   <h3>No embedded components yet</h3>
                   <p>
-                    Reusable components linked to published page content are listed above.
-                    Add an embedded component here only if this page needs page-owned content.
+                    Reusable components linked to published page content are listed above. Add an
+                    embedded component here only if this page needs page-owned content.
                   </p>
                   <button
                     className="button button-primary"
@@ -607,34 +580,17 @@ function App() {
                       busy={busy}
                       onEdit={() => openComponentEditor(component)}
                       onDelete={() =>
-                        void deleteResource(
-                          `/api/components/${component.id}`,
-                          "component",
-                        )
+                        void deleteResource(`/api/components/${component.id}`, "component")
                       }
-                      onAddBinding={() =>
-                        openBindingEditor(undefined, component.id)
-                      }
-                      onEditBinding={(binding) =>
-                        openBindingEditor(binding, component.id)
-                      }
+                      onAddBinding={() => openBindingEditor(undefined, component.id)}
+                      onEditBinding={(binding) => openBindingEditor(binding, component.id)}
                       onDeleteBinding={(binding) =>
-                        void deleteResource(
-                          `/api/bindings/${binding.id}`,
-                          "binding",
-                        )
+                        void deleteResource(`/api/bindings/${binding.id}`, "binding")
                       }
-                      onAddAction={() =>
-                        openActionEditor(undefined, component.id)
-                      }
-                      onEditAction={(action) =>
-                        openActionEditor(action, component.id)
-                      }
+                      onAddAction={() => openActionEditor(undefined, component.id)}
+                      onEditAction={(action) => openActionEditor(action, component.id)}
                       onDeleteAction={(action) =>
-                        void deleteResource(
-                          `/api/actions/${action.id}`,
-                          "action",
-                        )
+                        void deleteResource(`/api/actions/${action.id}`, "action")
                       }
                     />
                   ))}
@@ -646,10 +602,7 @@ function App() {
               <div className="welcome-mark">D</div>
               <div className="eyebrow">CONTENT MANAGEMENT</div>
               <h1>Build your pages.</h1>
-              <p>
-                Create and manage the page definitions served by your Discover
-                Jesus backend.
-              </p>
+              <p>Create and manage the page definitions served by your Discover Jesus backend.</p>
               <button
                 className="button button-primary"
                 type="button"
@@ -707,7 +660,9 @@ function ReusableComponentManager({
   const [locale, setLocale] = useState("en");
   const [newName, setNewName] = useState("");
   const [name, setName] = useState("");
-  const [initialContent, setInitialContent] = useState('{\n  "type": "text",\n  "value": "Reusable content"\n}');
+  const [initialContent, setInitialContent] = useState(
+    '{\n  "type": "text",\n  "value": "Reusable content"\n}',
+  );
   const [content, setContent] = useState('{\n  "type": "text",\n  "value": "Reusable content"\n}');
   const [contentLoaded, setContentLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -724,6 +679,8 @@ function ReusableComponentManager({
     setRevision(null);
     setError("");
     setNotice("");
+    // Reset only when a different component is selected, not when its name changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedComponent?.componentId]);
 
   function parseContent(): unknown {
@@ -736,17 +693,14 @@ function ReusableComponentManager({
     setError("");
     setNotice("");
     try {
-      const created = await apiRequest<ReusableComponentDraftResponse>(
-        "/api/reusable-components",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            name: newName,
-            locale,
-            content: parseJsonNode(initialContent, "Component content"),
-          }),
-        },
-      );
+      const created = await apiRequest<ReusableComponentDraftResponse>("/api/reusable-components", {
+        method: "POST",
+        body: JSON.stringify({
+          name: newName,
+          locale,
+          content: parseJsonNode(initialContent, "Component content"),
+        }),
+      });
       setNewName("");
       setName(created.name);
       setContent(jsonText(created.content));
@@ -756,7 +710,9 @@ function ReusableComponentManager({
       onRefresh();
       setNotice(`Created “${created.name}” with a ${created.locale} draft.`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to create the component.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Unable to create the component.",
+      );
     } finally {
       setBusy(false);
     }
@@ -791,7 +747,9 @@ function ReusableComponentManager({
         setNotice(`Loaded published ${published.locale} revision ${published.revision}.`);
       }
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : `Unable to load the ${kind}.`);
+      setError(
+        requestError instanceof Error ? requestError.message : `Unable to load the ${kind}.`,
+      );
     } finally {
       setBusy(false);
     }
@@ -840,14 +798,23 @@ function ReusableComponentManager({
       setRevision(published.revision);
       setNotice(`Published ${published.locale} revision ${published.revision}.`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to publish the component.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Unable to publish the component.",
+      );
     } finally {
       setBusy(false);
     }
   }
 
   async function withdrawComponent() {
-    if (!componentId || isWithdrawn || !window.confirm("Withdraw this reusable component? Referenced components cannot be withdrawn.")) return;
+    if (
+      !componentId ||
+      isWithdrawn ||
+      !window.confirm(
+        "Withdraw this reusable component? Referenced components cannot be withdrawn.",
+      )
+    )
+      return;
     setBusy(true);
     setError("");
     setNotice("");
@@ -861,14 +828,20 @@ function ReusableComponentManager({
       setNotice("Reusable component withdrawn.");
       onRefresh();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to withdraw the component.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Unable to withdraw the component.",
+      );
     } finally {
       setBusy(false);
     }
   }
 
   async function deleteComponent() {
-    if (!componentId || !window.confirm("Delete this reusable component? Referenced components cannot be deleted.")) return;
+    if (
+      !componentId ||
+      !window.confirm("Delete this reusable component? Referenced components cannot be deleted.")
+    )
+      return;
     setBusy(true);
     setError("");
     setNotice("");
@@ -883,7 +856,9 @@ function ReusableComponentManager({
       setNotice("Reusable component deleted.");
       onRefresh();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to delete the component.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Unable to delete the component.",
+      );
     } finally {
       setBusy(false);
     }
@@ -907,7 +882,9 @@ function ReusableComponentManager({
       onRefresh();
       setNotice(`Renamed component to “${updated.name}”.`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to rename the component.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Unable to rename the component.",
+      );
     } finally {
       setBusy(false);
     }
@@ -920,14 +897,27 @@ function ReusableComponentManager({
           <div className="eyebrow">BACKEND-MANAGED STORE</div>
           <h1>Reusable components</h1>
           <p className="panel-description">
-            Find components by name, manage their localized content, and add them to pages without handling UUIDs.
+            Find components by name, manage their localized content, and add them to pages without
+            handling UUIDs.
           </p>
         </div>
       </div>
       {(error || notice) && (
-        <div className={`alert ${error ? "alert-error" : "alert-success"}`} role={error ? "alert" : "status"}>
+        <div
+          className={`alert ${error ? "alert-error" : "alert-success"}`}
+          role={error ? "alert" : "status"}
+        >
           <span>{error || notice}</span>
-          <button type="button" aria-label="Dismiss notification" onClick={() => { setError(""); setNotice(""); }}>×</button>
+          <button
+            type="button"
+            aria-label="Dismiss notification"
+            onClick={() => {
+              setError("");
+              setNotice("");
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
       <div className="authoring-card">
@@ -935,14 +925,25 @@ function ReusableComponentManager({
         <form className="authoring-form" onSubmit={(event) => void createComponent(event)}>
           <label className="form-field">
             <span>Friendly name</span>
-            <input required maxLength={200} value={newName} onChange={(event) => setNewName(event.target.value)} />
+            <input
+              required
+              maxLength={200}
+              value={newName}
+              onChange={(event) => setNewName(event.target.value)}
+            />
           </label>
           <label className="form-field">
             <span>Locale</span>
             <input required value={locale} onChange={(event) => setLocale(event.target.value)} />
           </label>
-          <JsonEditorField label="Initial component content" value={initialContent} onChange={setInitialContent} />
-          <button className="button button-primary" type="submit" disabled={busy}>Create draft</button>
+          <JsonEditorField
+            label="Initial component content"
+            value={initialContent}
+            onChange={setInitialContent}
+          />
+          <button className="button button-primary" type="submit" disabled={busy}>
+            Create draft
+          </button>
         </form>
       </div>
       {selectedComponent ? (
@@ -959,37 +960,107 @@ function ReusableComponentManager({
           <form className="component-name-form" onSubmit={(event) => void renameComponent(event)}>
             <label className="form-field">
               <span>Friendly name</span>
-              <input required maxLength={200} value={name} onChange={(event) => setName(event.target.value)} />
+              <input
+                required
+                maxLength={200}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
             </label>
-            <button className="button button-secondary" type="submit" disabled={busy || name.trim() === selectedComponent.name}>
+            <button
+              className="button button-secondary"
+              type="submit"
+              disabled={busy || name.trim() === selectedComponent.name}
+            >
               Save name
             </button>
           </form>
           <div className="component-load-row">
             <label className="form-field locale-field">
               <span>Locale</span>
-              <input value={locale} onChange={(event) => { setLocale(event.target.value); setContentLoaded(false); setRevision(null); }} />
+              <input
+                value={locale}
+                onChange={(event) => {
+                  setLocale(event.target.value);
+                  setContentLoaded(false);
+                  setRevision(null);
+                }}
+              />
             </label>
             <div className="row-actions component-load-actions">
-              <button type="button" className="button button-secondary" disabled={busy || isWithdrawn} onClick={() => void loadComponent("draft")}>Load draft</button>
-              <button type="button" className="button button-secondary" disabled={busy || isWithdrawn} onClick={() => void loadComponent("published")}>Load published</button>
+              <button
+                type="button"
+                className="button button-secondary"
+                disabled={busy || isWithdrawn}
+                onClick={() => void loadComponent("draft")}
+              >
+                Load draft
+              </button>
+              <button
+                type="button"
+                className="button button-secondary"
+                disabled={busy || isWithdrawn}
+                onClick={() => void loadComponent("published")}
+              >
+                Load published
+              </button>
             </div>
           </div>
           {contentLoaded ? (
             <form className="authoring-form" onSubmit={(event) => void saveDraft(event)}>
-              <JsonEditorField label="Component content (JSON)" value={content} onChange={(value) => { setContent(value); setRevision(null); }} />
+              <JsonEditorField
+                label="Component content (JSON)"
+                value={content}
+                onChange={(value) => {
+                  setContent(value);
+                  setRevision(null);
+                }}
+              />
               <div className="authoring-actions">
-                <button className="button button-secondary" type="submit" disabled={busy || isWithdrawn || revision !== null}>Save draft</button>
-                <button className="button button-primary" type="button" disabled={busy || isWithdrawn || revision !== null} onClick={() => void publishDraft()}>Publish revision</button>
-                <button className="button button-danger-quiet" type="button" disabled={busy || isWithdrawn} onClick={() => void withdrawComponent()}>Withdraw</button>
-                <button className="button button-danger-quiet" type="button" disabled={busy} onClick={() => void deleteComponent()}>Delete component</button>
-                {revision !== null && <span className="revision-label">Published revision {revision}</span>}
+                <button
+                  className="button button-secondary"
+                  type="submit"
+                  disabled={busy || isWithdrawn || revision !== null}
+                >
+                  Save draft
+                </button>
+                <button
+                  className="button button-primary"
+                  type="button"
+                  disabled={busy || isWithdrawn || revision !== null}
+                  onClick={() => void publishDraft()}
+                >
+                  Publish revision
+                </button>
+                <button
+                  className="button button-danger-quiet"
+                  type="button"
+                  disabled={busy || isWithdrawn}
+                  onClick={() => void withdrawComponent()}
+                >
+                  Withdraw
+                </button>
+                <button
+                  className="button button-danger-quiet"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void deleteComponent()}
+                >
+                  Delete component
+                </button>
+                {revision !== null && (
+                  <span className="revision-label">Published revision {revision}</span>
+                )}
               </div>
             </form>
           ) : !isWithdrawn ? (
-            <p className="field-hint">Load this component’s draft or published content for the selected locale to edit it.</p>
+            <p className="field-hint">
+              Load this component’s draft or published content for the selected locale to edit it.
+            </p>
           ) : (
-            <p className="field-hint">Withdrawn components are unavailable to pages. You can rename or delete this entry.</p>
+            <p className="field-hint">
+              Withdrawn components are unavailable to pages. You can rename or delete this entry.
+            </p>
           )}
         </div>
       ) : (
@@ -1018,7 +1089,9 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
   const [publishedContent, setPublishedContent] = useState<PageContentResponse | null>(null);
   const [publishedContentLoading, setPublishedContentLoading] = useState(true);
   const [publishedContentError, setPublishedContentError] = useState("");
-  const [draftStatus, setDraftStatus] = useState<"checking" | "exists" | "missing" | "error">("checking");
+  const [draftStatus, setDraftStatus] = useState<"checking" | "exists" | "missing" | "error">(
+    "checking",
+  );
 
   useEffect(() => {
     let active = true;
@@ -1095,8 +1168,9 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
     : [];
   const linkedComponents = linkedComponentIds.map((componentId) => ({
     componentId,
-    name: components.find((component) => component.componentId === componentId)?.name
-      ?? "Reusable component",
+    name:
+      components.find((component) => component.componentId === componentId)?.name ??
+      "Reusable component",
   }));
   const contentLoadFailed = Boolean(publishedContentError);
 
@@ -1115,7 +1189,9 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
       if (requestError instanceof ApiRequestError && requestError.status === 404) {
         setDraftStatus("missing");
       }
-      setError(requestError instanceof Error ? requestError.message : "Unable to load the page draft.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Unable to load the page draft.",
+      );
     } finally {
       setBusy(false);
     }
@@ -1133,7 +1209,9 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
       setSections(jsonText(draft.sections));
       setDraftStatus("exists");
       setPublishedVersion(null);
-      setNotice(`Started a ${draft.locale} draft from published content. Existing component references are preserved.`);
+      setNotice(
+        `Started a ${draft.locale} draft from published content. Existing component references are preserved.`,
+      );
     } catch (requestError) {
       if (requestError instanceof ApiRequestError && requestError.status === 409) {
         await loadDraft();
@@ -1172,7 +1250,9 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
       setPublishedVersion(null);
       setNotice(`Saved ${draft.locale} page draft.`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to save the page draft.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Unable to save the page draft.",
+      );
     } finally {
       setBusy(false);
     }
@@ -1193,7 +1273,9 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
       setDraftStatus("missing");
       setNotice(`Published ${published.locale} page revision ${published.version}.`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to publish the page.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Unable to publish the page.",
+      );
     } finally {
       setBusy(false);
     }
@@ -1221,7 +1303,11 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
       setError("");
       setNotice("Component reference added to the draft editor. Save the draft to persist it.");
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to add a component reference.");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to add a component reference.",
+      );
     }
   }
 
@@ -1232,7 +1318,8 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
           <div className="eyebrow">LOCALE-SPECIFIC PAGE CONTENT</div>
           <h2>Sections and reusable references</h2>
           <p className="panel-description">
-            Draft and publish page sections. Select components by friendly name; the Studio keeps their identifiers internal.
+            Draft and publish page sections. Select components by friendly name; the Studio keeps
+            their identifiers internal.
           </p>
         </div>
         <label className="form-field locale-field">
@@ -1244,17 +1331,23 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
         <div className="published-reference-heading">
           <strong>Reusable components in published content</strong>
           {publishedContent && (
-            <span>{publishedContent.locale} · revision {publishedContent.version}</span>
+            <span>
+              {publishedContent.locale} · revision {publishedContent.version}
+            </span>
           )}
         </div>
         {publishedContentLoading ? (
           <p className="field-hint">Loading published content…</p>
         ) : publishedContentError ? (
-          <p className="published-reference-error" role="alert">{publishedContentError}</p>
+          <p className="published-reference-error" role="alert">
+            {publishedContentError}
+          </p>
         ) : !publishedContent ? (
           <p className="field-hint">No published page content exists for this locale yet.</p>
         ) : linkedComponents.length === 0 ? (
-          <p className="field-hint">This published page does not reference any reusable components.</p>
+          <p className="field-hint">
+            This published page does not reference any reusable components.
+          </p>
         ) : (
           <ul className="published-reference-list">
             {linkedComponents.map((component, index) => (
@@ -1267,14 +1360,33 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
         )}
       </section>
       {(error || notice) && (
-        <div className={`alert ${error ? "alert-error" : "alert-success"}`} role={error ? "alert" : "status"}>
+        <div
+          className={`alert ${error ? "alert-error" : "alert-success"}`}
+          role={error ? "alert" : "status"}
+        >
           <span>{error || notice}</span>
-          <button type="button" aria-label="Dismiss notification" onClick={() => { setError(""); setNotice(""); }}>×</button>
+          <button
+            type="button"
+            aria-label="Dismiss notification"
+            onClick={() => {
+              setError("");
+              setNotice("");
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
       <form className="authoring-form" onSubmit={(event) => void saveDraft(event)}>
         <div className="row-actions">
-          <button className="button button-secondary" type="button" disabled={busy || draftStatus === "checking" || draftStatus === "error"} onClick={() => void loadDraft()}>Load draft</button>
+          <button
+            className="button button-secondary"
+            type="button"
+            disabled={busy || draftStatus === "checking" || draftStatus === "error"}
+            onClick={() => void loadDraft()}
+          >
+            Load draft
+          </button>
           {publishedContent && draftStatus === "missing" && (
             <button
               className="button button-primary"
@@ -1291,15 +1403,26 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
             <span>Reusable component</span>
             <select value={referenceId} onChange={(event) => setReferenceId(event.target.value)}>
               <option value="">Choose a component</option>
-              {components.filter((component) => !component.isWithdrawn).map((component) => (
-                <option key={component.componentId} value={component.componentId}>{component.name}</option>
-              ))}
+              {components
+                .filter((component) => !component.isWithdrawn)
+                .map((component) => (
+                  <option key={component.componentId} value={component.componentId}>
+                    {component.name}
+                  </option>
+                ))}
             </select>
           </label>
           <button
             className="button button-secondary"
             type="button"
-            disabled={!referenceId || busy || contentLoadFailed || draftStatus === "checking" || draftStatus === "error" || (!!publishedContent && draftStatus === "missing")}
+            disabled={
+              !referenceId ||
+              busy ||
+              contentLoadFailed ||
+              draftStatus === "checking" ||
+              draftStatus === "error" ||
+              (!!publishedContent && draftStatus === "missing")
+            }
             onClick={appendReference}
           >
             Add reference
@@ -1307,13 +1430,26 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
         </div>
         <details className="advanced-json-editor">
           <summary>Advanced: edit page sections as JSON</summary>
-          <JsonEditorField label="Sections (JSON array)" value={sections} onChange={(value) => { setSections(value); setPublishedVersion(null); }} />
+          <JsonEditorField
+            label="Sections (JSON array)"
+            value={sections}
+            onChange={(value) => {
+              setSections(value);
+              setPublishedVersion(null);
+            }}
+          />
         </details>
         <div className="authoring-actions">
           <button
             className="button button-secondary"
             type="submit"
-            disabled={busy || contentLoadFailed || draftStatus === "checking" || draftStatus === "error" || (!!publishedContent && draftStatus === "missing")}
+            disabled={
+              busy ||
+              contentLoadFailed ||
+              draftStatus === "checking" ||
+              draftStatus === "error" ||
+              (!!publishedContent && draftStatus === "missing")
+            }
           >
             Save draft
           </button>
@@ -1325,7 +1461,9 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
           >
             Publish page
           </button>
-          {publishedVersion !== null && <span className="revision-label">Published revision {publishedVersion}</span>}
+          {publishedVersion !== null && (
+            <span className="revision-label">Published revision {publishedVersion}</span>
+          )}
         </div>
       </form>
     </div>
@@ -1341,8 +1479,15 @@ interface JsonEditorFieldProps {
 function JsonEditorField({ label, value, onChange }: JsonEditorFieldProps) {
   return (
     <label className="form-field">
-      <span>{label} <small>Valid JSON</small></span>
-      <textarea rows={9} spellCheck={false} value={value} onChange={(event) => onChange(event.target.value)} />
+      <span>
+        {label} <small>Valid JSON</small>
+      </span>
+      <textarea
+        rows={9}
+        spellCheck={false}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }
@@ -1353,11 +1498,7 @@ interface PublishedPagePreviewProps {
   onClose: () => void;
 }
 
-export function PublishedPagePreview({
-  initialPageId,
-  pages,
-  onClose,
-}: PublishedPagePreviewProps) {
+export function PublishedPagePreview({ initialPageId, pages, onClose }: PublishedPagePreviewProps) {
   const [localeInput, setLocaleInput] = useState("en");
   const [locale, setLocale] = useState("en");
   const [pageHistory, setPageHistory] = useState([initialPageId]);
@@ -1378,11 +1519,11 @@ export function PublishedPagePreview({
     )
       .then((result) => {
         if (
-          typeof result.id !== "string"
-          || typeof result.title !== "string"
-          || typeof result.locale !== "string"
-          || !Number.isInteger(result.version)
-          || !Array.isArray(result.sections)
+          typeof result.id !== "string" ||
+          typeof result.title !== "string" ||
+          typeof result.locale !== "string" ||
+          !Number.isInteger(result.version) ||
+          !Array.isArray(result.sections)
         ) {
           throw new Error("The published page response has an invalid shape.");
         }
@@ -1463,18 +1604,30 @@ export function PublishedPagePreview({
         <div>
           <div className="eyebrow">PUBLISHED PAGE PREVIEW</div>
           <h1>{content?.title ?? "Preview page"}</h1>
-          {content && <p className="page-slug">Locale {content.locale} · Revision {content.version}</p>}
+          {content && (
+            <p className="page-slug">
+              Locale {content.locale} · Revision {content.version}
+            </p>
+          )}
         </div>
         <div className="preview-toolbar-actions">
           <form className="preview-locale-form" onSubmit={changeLocale}>
             <label htmlFor="preview-locale">Locale</label>
-            <input id="preview-locale" value={localeInput}
-              onChange={(event) => setLocaleInput(event.target.value)} />
-            <button className="button button-secondary" type="submit">Load</button>
+            <input
+              id="preview-locale"
+              value={localeInput}
+              onChange={(event) => setLocaleInput(event.target.value)}
+            />
+            <button className="button button-secondary" type="submit">
+              Load
+            </button>
           </form>
           {pageHistory.length > 1 && (
-            <button className="button button-secondary" type="button"
-              onClick={() => setPageHistory((history) => history.slice(0, -1))}>
+            <button
+              className="button button-secondary"
+              type="button"
+              onClick={() => setPageHistory((history) => history.slice(0, -1))}
+            >
               Back
             </button>
           )}
@@ -1484,9 +1637,15 @@ export function PublishedPagePreview({
         </div>
       </div>
 
-      {actionMessage && <p className="preview-notice" role="status">{actionMessage}</p>}
+      {actionMessage && (
+        <p className="preview-notice" role="status">
+          {actionMessage}
+        </p>
+      )}
       {loading ? (
-        <div className="empty-state" role="status"><p>Loading published content…</p></div>
+        <div className="empty-state" role="status">
+          <p>Loading published content…</p>
+        </div>
       ) : error ? (
         <div className="empty-state preview-error" role="alert">
           <div className="empty-icon">!</div>
@@ -1495,7 +1654,9 @@ export function PublishedPagePreview({
           <p>Check that this page has published content for the selected locale.</p>
         </div>
       ) : content && Array.isArray(content.sections) && content.sections.length === 0 ? (
-        <div className="empty-state"><p>This page has no published sections.</p></div>
+        <div className="empty-state">
+          <p>This page has no published sections.</p>
+        </div>
       ) : (
         <article className="preview-canvas">
           {content && Array.isArray(content.sections)
@@ -1550,8 +1711,17 @@ function ComponentCard({
           <span>{component.actions.length} actions</span>
         </div>
         <div className="row-actions">
-          <button className="text-button" type="button" onClick={onEdit}>Edit</button>
-          <button className="text-button text-danger" type="button" disabled={busy} onClick={onDelete}>Delete</button>
+          <button className="text-button" type="button" onClick={onEdit}>
+            Edit
+          </button>
+          <button
+            className="text-button text-danger"
+            type="button"
+            disabled={busy}
+            onClick={onDelete}
+          >
+            Delete
+          </button>
         </div>
       </div>
 
@@ -1572,14 +1742,29 @@ function ComponentCard({
                       <span className="child-subtitle">{binding.source}</span>
                     </div>
                     <div className="child-actions">
-                      <button className="text-button" type="button" onClick={() => onEditBinding(binding)}>Edit</button>
-                      <button className="text-button text-danger" type="button" disabled={busy} onClick={() => onDeleteBinding(binding)}>Delete</button>
+                      <button
+                        className="text-button"
+                        type="button"
+                        onClick={() => onEditBinding(binding)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="text-button text-danger"
+                        type="button"
+                        disabled={busy}
+                        onClick={() => onDeleteBinding(binding)}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            <button className="text-button add-child" type="button" onClick={onAddBinding}>+ Add binding</button>
+            <button className="text-button add-child" type="button" onClick={onAddBinding}>
+              + Add binding
+            </button>
           </div>
         </details>
 
@@ -1599,14 +1784,29 @@ function ComponentCard({
                       <span className="child-subtitle">{action.type}</span>
                     </div>
                     <div className="child-actions">
-                      <button className="text-button" type="button" onClick={() => onEditAction(action)}>Edit</button>
-                      <button className="text-button text-danger" type="button" disabled={busy} onClick={() => onDeleteAction(action)}>Delete</button>
+                      <button
+                        className="text-button"
+                        type="button"
+                        onClick={() => onEditAction(action)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="text-button text-danger"
+                        type="button"
+                        disabled={busy}
+                        onClick={() => onDeleteAction(action)}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            <button className="text-button add-child" type="button" onClick={onAddAction}>+ Add action</button>
+            <button className="text-button add-child" type="button" onClick={onAddAction}>
+              + Add action
+            </button>
           </div>
         </details>
       </div>
@@ -1622,18 +1822,14 @@ interface EditorDialogProps {
   onChange: (field: string, value: string) => void;
 }
 
-function EditorDialog({
-  editor,
-  busy,
-  onClose,
-  onSave,
-  onChange,
-}: EditorDialogProps) {
+function EditorDialog({ editor, busy, onClose, onSave, onChange }: EditorDialogProps) {
   const field = (name: string) => editor.values[name] ?? "";
   const input = (label: string, name: string, placeholder?: string) => (
     <label className="form-field" key={name}>
       <span>{label}</span>
       <input
+        // Focus the first field when the modal editor dialog opens.
+        // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus={name === (editor.kind === "page" ? "title" : "key")}
         required
         value={field(name)}
@@ -1644,7 +1840,9 @@ function EditorDialog({
   );
   const jsonField = (label: string, name: string) => (
     <label className="form-field" key={name}>
-      <span>{label} <small>Valid JSON</small></span>
+      <span>
+        {label} <small>Valid JSON</small>
+      </span>
       <textarea
         required
         rows={7}
@@ -1656,9 +1854,13 @@ function EditorDialog({
   );
 
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => {
-      if (event.target === event.currentTarget && !busy) onClose();
-    }}>
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !busy) onClose();
+      }}
+    >
       <section
         className="editor-dialog"
         role="dialog"
@@ -1695,9 +1897,7 @@ function EditorDialog({
                   <input
                     type="checkbox"
                     checked={field("isPublished") === "true"}
-                    onChange={(event) =>
-                      onChange("isPublished", String(event.target.checked))
-                    }
+                    onChange={(event) => onChange("isPublished", String(event.target.checked))}
                   />
                 </label>
               </>
