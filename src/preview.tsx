@@ -57,8 +57,7 @@ export function resolvePageNavigation(
   if (typeof pageId !== "string") return { status: "invalid" };
   const page = pages.find(
     (page) =>
-      typeof page.publicId === "string"
-      && page.publicId.toLowerCase() === pageId.toLowerCase(),
+      typeof page.publicId === "string" && page.publicId.toLowerCase() === pageId.toLowerCase(),
   );
   if (!page) return { status: "invalid" };
   if (!page.isPublished) return { status: "unavailable" };
@@ -106,7 +105,9 @@ export function renderPreviewNode(
   switch (value.type) {
     case "text":
       return typeof value.value === "string" ? (
-        <p className="preview-text" key={key}>{value.value}</p>
+        <p className="preview-text" key={key}>
+          {value.value}
+        </p>
       ) : (
         <p className="preview-notice" key={key} role="status">
           Text content is missing its value.
@@ -115,8 +116,12 @@ export function renderPreviewNode(
     case "image": {
       const src = safeImageUrl(value.src);
       return src ? (
-        <img className="preview-image" key={key} src={src}
-          alt={typeof value.alt === "string" ? value.alt : ""} />
+        <img
+          className="preview-image"
+          key={key}
+          src={src}
+          alt={typeof value.alt === "string" ? value.alt : ""}
+        />
       ) : (
         <p className="preview-notice" key={key} role="status">
           This image has no valid HTTP or HTTPS source.
@@ -125,16 +130,17 @@ export function renderPreviewNode(
     }
     case "button": {
       const action = isPreviewAction(value.action) ? value.action : null;
-      const externalUrl = action?.type === "openExternalUrl"
-        ? safeExternalUrl(action.url)
-        : null;
-      const label = typeof value.value === "string" && value.value
-        ? value.value
-        : "Button";
+      const externalUrl = action?.type === "openExternalUrl" ? safeExternalUrl(action.url) : null;
+      const label = typeof value.value === "string" && value.value ? value.value : "Button";
       if (externalUrl) {
         return (
-          <a className="button button-primary preview-button" key={key}
-            href={externalUrl} target="_blank" rel="noopener noreferrer">
+          <a
+            className="button button-primary preview-button"
+            key={key}
+            href={externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {label}
           </a>
         );
@@ -154,9 +160,17 @@ export function renderPreviewNode(
     }
     case "stack":
     case "column":
-      return <div className="preview-layout preview-column" key={key}>{renderChildren(children)}</div>;
+      return (
+        <div className="preview-layout preview-column" key={key}>
+          {renderChildren(children)}
+        </div>
+      );
     case "row":
-      return <div className="preview-layout preview-row" key={key}>{renderChildren(children)}</div>;
+      return (
+        <div className="preview-layout preview-row" key={key}>
+          {renderChildren(children)}
+        </div>
+      );
     case "divider":
       return <hr className="preview-divider" key={key} />;
     case "spacer":

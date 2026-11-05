@@ -8,16 +8,19 @@ for the Discover Jesus ecosystem (iOS, Android, Backend, Web).
 We use a simple, AI-friendly branching model:
 
 ### main
+
 - Production-ready content
 - Only merged via pull requests
 - Protected branch
 
 ### dev
+
 - Integration branch
 - All feature branches merge here first
 - Used for testing and validation
 
 ### feature/<name>
+
 - One branch per feature
 - Examples:
   - feature/page-schema
@@ -27,6 +30,7 @@ We use a simple, AI-friendly branching model:
 - Merged back into `dev` when complete
 
 ### fix/<name>
+
 - One branch per bug fix
 - Examples:
   - fix/schema-typo
@@ -61,4 +65,3 @@ AI agents (ChatGPT, GROC, etc.) should follow:
 - Always update documentation when schemas change
 
 ## Folder Structure
-

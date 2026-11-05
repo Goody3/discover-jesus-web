@@ -5,7 +5,7 @@ backend.
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 20.9 or newer; CI and [.nvmrc](.nvmrc) use Node 22
 - The Discover Jesus backend and its SQL Server database
 
 ## Run locally
@@ -36,6 +36,35 @@ Published pages can be previewed using the backend-managed page-content API;
 previews expand reusable component references and support page UUID navigation.
 Conditional actions and content requiring runtime bindings are deliberately not
 evaluated in preview.
+
+## Quality checks
+
+The [CI workflow](.github/workflows/ci.yml) runs on pull requests to `dev` or
+`main` and on pushes to those branches. It installs from the lockfile with
+`npm ci`, then checks formatting, lints, type-checks, builds, and runs the
+tests. A separate job runs `npm audit`, reports every finding, and fails only
+on High or Critical vulnerabilities. Run the same checks locally:
+
+```sh
+npm ci
+npm run format:check
+npm run lint
+npm run typecheck
+npm run build
+npm test
+npm run audit:ci
+```
+
+Use `npm run format` to apply Prettier formatting. ESLint includes React hooks
+and accessibility (`jsx-a11y`) rules; suppress a finding only with an inline
+comment that states the reason.
+
+`npm test` runs two suites: the Node test runner for the preview renderer
+(`tests/*.test.mjs`) and Vitest with React Testing Library and jsdom
+(`tests/vitest/`) for `apiRequest` and the UI flows. The Vitest tests mock
+`fetch` through `tests/vitest/fakeApi.ts`, so no backend is needed, and they
+assert user-visible behavior rather than component structure. Run
+`npx vitest` for watch mode.
 
 To build the static UI:
 
