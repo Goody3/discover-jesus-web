@@ -59,12 +59,14 @@ Use `npm run format` to apply Prettier formatting. ESLint includes React hooks
 and accessibility (`jsx-a11y`) rules; suppress a finding only with an inline
 comment that states the reason.
 
-`npm test` runs two suites: the Node test runner for the preview renderer
-(`tests/*.test.mjs`) and Vitest with React Testing Library and jsdom
-(`tests/vitest/`) for `apiRequest` and the UI flows. The Vitest tests mock
-`fetch` through `tests/vitest/fakeApi.ts`, so no backend is needed, and they
-assert user-visible behavior rather than component structure. Run
-`npx vitest` for watch mode.
+`npm test` runs the Vitest suite in `tests/vitest/`, including preview renderer
+tests, with React Testing Library and jsdom. The tests mock `fetch` through
+`tests/vitest/fakeApi.ts`, so no backend is needed, and assert user-visible
+behavior rather than component structure. Vitest measures coverage for `src/`,
+prints a summary in the test output, and writes LCOV and Cobertura reports to
+`coverage/`; CI uploads these reports as an artifact. Coverage thresholds are
+not enforced until the platform owner approves them. Run `npx vitest` for watch
+mode.
 
 To build the static UI:
 
