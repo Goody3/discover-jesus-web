@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "tsc -p tsconfig.tests.json && node --test tests/*.test.mjs && vitest run",
+    "test": "vitest run --coverage",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -30,6 +30,7 @@
     "@types/react": "18.2.37",
     "@types/react-dom": "18.2.15",
     "@vitejs/plugin-react": "4.7.0",
+    "@vitest/coverage-v8": "5.1.0",
     "eslint": "9.39.5",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jsx-a11y": "6.10.2",
