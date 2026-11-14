@@ -1,77 +1,38 @@
-export interface PageSummary {
-  id: number;
-  publicId: string;
-  slug: string;
-  title: string;
-  isPublished: boolean;
-}
+import type { components, operations } from "./generated/backend-api";
 
-export interface Page extends PageSummary {
-  components: Component[];
+type JsonResponse<Response> = Response extends {
+  content: { "application/json": infer Body };
 }
+  ? Body
+  : void;
 
-export interface Component {
-  id: number;
-  key: string;
-  type: string;
-  props: unknown;
-  sortOrder: number;
-  bindings: Binding[];
-  actions: ActionDefinition[];
-}
+export type ApiResponse<Operation extends keyof operations> = Operation extends keyof operations
+  ? {
+      [
+        Status in keyof operations[Operation]["responses"]
+      ]: `${Status & (string | number)}` extends `2${string}`
+        ? JsonResponse<operations[Operation]["responses"][Status]>
+        : never;
+    }[keyof operations[Operation]["responses"]]
+  : never;
 
-export interface Binding {
-  id: number;
-  name: string;
-  source: string;
-  config: unknown;
+export type ApiRequestBody<Operation extends keyof operations> = operations[Operation] extends {
+  requestBody: { content: { "application/json": infer Body } };
 }
+  ? Body
+  : never;
 
-export interface ActionDefinition {
-  id: number;
-  name: string;
-  type: string;
-  config: unknown;
-}
-
-export interface PageContentResponse {
-  id: string;
-  title: string;
-  locale: string;
-  version: number;
-  sections: unknown;
-}
-
-export interface PageContentDraftResponse {
-  pageId: string;
-  locale: string;
-  sections: unknown;
-  updatedAt: string;
-}
-
-export interface ReusableComponentSummary {
-  componentId: string;
-  name: string;
-  isWithdrawn: boolean;
-  createdAt: string;
-}
-
-export interface ReusableComponentDraftResponse {
-  componentId: string;
-  name: string;
-  locale: string;
-  content: unknown;
-  updatedAt: string;
-}
-
-export interface ReusableComponentResponse {
-  componentId: string;
-  name: string;
-  locale: string;
-  revision: number;
-  content: unknown;
-  publishedAt: string;
-}
+export type PageSummary = components["schemas"]["PageSummary"];
+export type Page = components["schemas"]["PageResponse"];
+export type Component = components["schemas"]["ComponentResponse"];
+export type Binding = components["schemas"]["BindingResponse"];
+export type ActionDefinition = components["schemas"]["ActionResponse"];
+export type PageContentResponse = components["schemas"]["PageContentResponse"];
+export type PageContentDraftResponse = components["schemas"]["PageContentDraftResponse"];
+export type ReusableComponentSummary = components["schemas"]["ReusableComponentSummary"];
+export type ReusableComponentDraftResponse =
+  components["schemas"]["ReusableComponentDraftResponse"];
+export type ReusableComponentResponse = components["schemas"]["ReusableComponentResponse"];
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
