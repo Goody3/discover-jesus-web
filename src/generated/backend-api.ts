@@ -1,4 +1,4 @@
-// Generated from Goody3/discover-jesus-backend@dc977a8d61b789bc33683f6d2b0c41cac8f71d8f:api/openapi.json.
+// Generated from Goody3/discover-jesus-backend@f0466e0797e541784ce077245005c62228529361:api/openapi.json.
 // Do not edit; run npm run api:generate.
 export interface paths {
   "/api/components/{componentId}/actions": {
@@ -207,6 +207,23 @@ export interface paths {
     };
     /** Get a page and its components, bindings, and actions */
     get: operations["GetPage"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/pages/by-public-id/{pageId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get a management page by public UUID, including unpublished pages */
+    get: operations["GetPageByPublicId"];
     put?: never;
     post?: never;
     delete?: never;
@@ -1290,6 +1307,35 @@ export interface operations {
       header?: never;
       path: {
         slug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PageResponse"];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  GetPageByPublicId: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pageId: string;
       };
       cookie?: never;
     };

@@ -8,22 +8,96 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const summary = { id: 7, publicId: "p-7", slug: "welcome", title: "Welcome", isPublished: false };
+const summary = {
+  id: 7,
+  publicId: "77777777-7777-7777-7777-777777777777",
+  slug: "welcome",
+  title: "Welcome",
+  isPublished: false,
+};
 const page = { ...summary, components: [] };
+const managementPath = `/api/pages/by-public-id/${summary.publicId}`;
 
 function baseRoutes(extra: Record<string, FakeResponse | (() => FakeResponse)> = {}) {
   return {
     "GET /health": { body: { status: "ok" } },
     "GET /api/pages/": { body: [summary] },
-    "GET /api/pages/welcome": { body: page },
+    [`GET ${managementPath}`]: { body: page },
     "GET /api/reusable-components": { body: [] },
-    "GET /api/content/pages/p-7": { status: 404, body: { title: "Not found" } },
-    "GET /api/content/pages/p-7/draft": { status: 404, body: { title: "Not found" } },
+    [`GET /api/content/pages/${summary.publicId}`]: { status: 404, body: { title: "Not found" } },
+    [`GET /api/content/pages/${summary.publicId}/draft`]: {
+      status: 404,
+      body: { title: "Not found" },
+    },
     ...extra,
   };
 }
 
 describe("page editor", () => {
+  it("loads an unpublished management page by UUID without requesting slug detail", async () => {
+    const { requests } = installFakeApi(baseRoutes());
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Welcome", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit page" })).toBeInTheDocument();
+    expect(requests.some((r) => r.method === "GET" && r.path === managementPath)).toBe(true);
+    expect(requests.some((r) => r.path === "/api/pages/welcome")).toBe(false);
+  });
+
+  it("keeps the selected UUID when its slug is renamed", async () => {
+    let current = { ...summary };
+    const other = {
+      ...summary,
+      id: 8,
+      publicId: "88888888-8888-8888-8888-888888888888",
+      slug: "other",
+      title: "Other",
+    };
+    const { requests } = installFakeApi(
+      baseRoutes({
+        "GET /api/pages/": () => ({ body: [other, current] }),
+        [`GET /api/pages/by-public-id/${other.publicId}`]: { body: { ...other, components: [] } },
+        [`GET /api/content/pages/${other.publicId}`]: { status: 404 },
+        [`GET /api/content/pages/${other.publicId}/draft`]: { status: 404 },
+        [`GET ${managementPath}`]: () => ({ body: { ...current, components: [] } }),
+        "PUT /api/pages/7": () => {
+          current = { ...current, slug: "renamed", title: "Renamed" };
+          return { body: current };
+        },
+      }),
+    );
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByRole("heading", { name: "Other", level: 1 });
+    await user.click(screen.getByRole("button", { name: "Welcome" }));
+    await screen.findByRole("heading", { name: "Welcome", level: 1 });
+    await user.click(await screen.findByRole("button", { name: "Edit page" }));
+    const dialog = await screen.findByRole("dialog");
+    const slug = within(dialog).getByLabelText("URL slug");
+    await user.clear(slug);
+    await user.type(slug, "renamed");
+    await user.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    expect(await screen.findByRole("heading", { name: "Renamed", level: 1 })).toBeInTheDocument();
+    expect(screen.getByText("/renamed", { selector: ".page-slug" })).toBeInTheDocument();
+    expect(requests.filter((r) => r.path === managementPath).length).toBeGreaterThanOrEqual(2);
+    expect(
+      requests.some((r) => ["/api/pages/welcome", "/api/pages/renamed"].includes(r.path)),
+    ).toBe(false);
+  });
+
+  it("surfaces UUID lookup errors without silently retrying the slug route", async () => {
+    const { requests } = installFakeApi(
+      baseRoutes({
+        [`GET ${managementPath}`]: { status: 404, body: { title: "Management page unavailable." } },
+      }),
+    );
+    render(<App />);
+
+    expect(await screen.findByText("Management page unavailable.")).toBeInTheDocument();
+    expect(requests.some((r) => r.path === "/api/pages/welcome")).toBe(false);
+  });
+
   it("creates a page", async () => {
     let created = false;
     const { requests } = installFakeApi(

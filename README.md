@@ -37,6 +37,15 @@ previews expand reusable component references and support page UUID navigation.
 Conditional actions and content requiring runtime bindings are deliberately not
 evaluated in preview.
 
+Management page selection and loading use each page's public UUID through
+`GET /api/pages/by-public-id/{pageId}`. This returns the same inline management
+content, including unpublished pages, as the retained backend slug lookup;
+it is separate from localized published-content delivery. Slugs remain editable
+display fields, and create/update/delete operations still use their existing
+request shapes and integer mutation IDs. There is no silent retry through the
+slug route if UUID loading fails. Deploy the backend UUID lookup before this
+client update; legacy route removal and iOS fallback retirement are not included.
+
 ## Quality checks
 
 The [CI workflow](.github/workflows/ci.yml) runs on pull requests to `dev` or
