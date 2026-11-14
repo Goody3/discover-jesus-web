@@ -52,7 +52,7 @@ function collectSourceComponentIds(value: unknown, ids = new Set<string>()): Set
 function App() {
   const [pages, setPages] = useState<PageSummary[]>([]);
   const [reusableComponents, setReusableComponents] = useState<ReusableComponentSummary[]>([]);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [selectedReusableComponentId, setSelectedReusableComponentId] = useState<string | null>(
     null,
   );
@@ -74,10 +74,10 @@ function App() {
     try {
       const results = await apiRequest<ApiResponse<"GetPages">>("/api/pages/");
       setPages(results);
-      setSelectedSlug((current) =>
-        current && results.some((item) => item.slug === current)
+      setSelectedPageId((current) =>
+        current && results.some((item) => item.publicId === current)
           ? current
-          : (results[0]?.slug ?? null),
+          : (results[0]?.publicId ?? null),
       );
       setError("");
     } catch (requestError) {
@@ -123,7 +123,7 @@ function App() {
 
   useEffect(() => {
     let active = true;
-    if (!selectedSlug) {
+    if (!selectedPageId) {
       setPage(null);
       return () => {
         active = false;
@@ -131,7 +131,9 @@ function App() {
     }
 
     setLoadingPage(true);
-    apiRequest<ApiResponse<"GetPage">>(`/api/pages/${encodeURIComponent(selectedSlug)}`)
+    apiRequest<ApiResponse<"GetPageByPublicId">>(
+      `/api/pages/by-public-id/${encodeURIComponent(selectedPageId)}`,
+    )
       .then((result) => {
         if (active) {
           setPage(result);
@@ -153,7 +155,7 @@ function App() {
     return () => {
       active = false;
     };
-  }, [selectedSlug, pageRefresh]);
+  }, [selectedPageId, pageRefresh]);
 
   const checkConnection = useCallback(async () => {
     setConnection("checking");
@@ -300,8 +302,8 @@ function App() {
         body: JSON.stringify(body),
       });
       setEditor(null);
-      if (editor.kind === "page" && "slug" in saved) {
-        setSelectedSlug(saved.slug);
+      if (editor.kind === "page" && "publicId" in saved) {
+        setSelectedPageId(saved.publicId);
         setPageRefresh((count) => count + 1);
         await refreshPages();
       } else {
@@ -326,7 +328,7 @@ function App() {
       >(path, { method: "DELETE" });
       if (pageDeleted) {
         setPage(null);
-        setSelectedSlug(null);
+        setSelectedPageId(null);
         await refreshPages();
       } else {
         setPageRefresh((count) => count + 1);
@@ -339,7 +341,7 @@ function App() {
     }
   }
 
-  const selectedSummary = pages.find((item) => item.slug === selectedSlug);
+  const selectedSummary = pages.find((item) => item.publicId === selectedPageId);
   const selectedReusableComponent = reusableComponents.find(
     (item) => item.componentId === selectedReusableComponentId,
   );
@@ -415,11 +417,11 @@ function App() {
               <button
                 type="button"
                 key={item.id}
-                className={`page-nav-item${workspaceMode === "pages" && item.slug === selectedSlug ? " active" : ""}`}
+                className={`page-nav-item${workspaceMode === "pages" && item.publicId === selectedPageId ? " active" : ""}`}
                 onClick={() => {
                   setWorkspaceMode("pages");
                   setPreviewPageId(null);
-                  setSelectedSlug(item.slug);
+                  setSelectedPageId(item.publicId);
                 }}
               >
                 <span className="page-nav-title">{item.title}</span>
@@ -628,7 +630,7 @@ function App() {
                 <button
                   className="button button-secondary"
                   type="button"
-                  onClick={() => setSelectedSlug(selectedSummary.slug)}
+                  onClick={() => setSelectedPageId(selectedSummary.publicId)}
                 >
                   Open {selectedSummary.title}
                 </button>
