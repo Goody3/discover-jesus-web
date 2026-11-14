@@ -6,7 +6,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist/", ".test-build/", "node_modules/"] },
+  { ignores: ["dist/", ".test-build/", "node_modules/", "src/generated/"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   jsxA11y.flatConfigs.recommended,
@@ -22,7 +22,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["*.{js,ts}", "tests/**/*.mjs"],
+    files: ["*.{js,ts}", "tests/**/*.mjs", "scripts/**/*.mjs"],
     languageOptions: { globals: globals.node },
   },
   prettier,
