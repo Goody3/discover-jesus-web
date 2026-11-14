@@ -13,6 +13,12 @@ export default defineConfig(({ mode }) => {
       include: ["tests/vitest/**/*.test.{ts,tsx}"],
       setupFiles: ["tests/vitest/setup.ts"],
       restoreMocks: true,
+      coverage: {
+        provider: "v8",
+        include: ["src/**/*.{ts,tsx}"],
+        exclude: ["src/vite-env.d.ts"],
+        reporter: ["text", "lcov", "cobertura"],
+      },
     },
     server: {
       proxy: {

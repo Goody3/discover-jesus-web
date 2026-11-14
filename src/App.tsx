@@ -2,15 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ApiRequestError,
   apiRequest,
+  type ApiRequestBody,
+  type ApiResponse,
   type ActionDefinition,
   type Binding,
   type Component,
-  type PageContentDraftResponse,
   type PageContentResponse,
   type Page,
   type PageSummary,
-  type ReusableComponentDraftResponse,
-  type ReusableComponentResponse,
   type ReusableComponentSummary,
 } from "./api";
 import {
@@ -53,7 +52,7 @@ function collectSourceComponentIds(value: unknown, ids = new Set<string>()): Set
 function App() {
   const [pages, setPages] = useState<PageSummary[]>([]);
   const [reusableComponents, setReusableComponents] = useState<ReusableComponentSummary[]>([]);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [selectedReusableComponentId, setSelectedReusableComponentId] = useState<string | null>(
     null,
   );
@@ -73,12 +72,12 @@ function App() {
   const refreshPages = useCallback(async () => {
     setLoadingPages(true);
     try {
-      const results = await apiRequest<PageSummary[]>("/api/pages/");
+      const results = await apiRequest<ApiResponse<"GetPages">>("/api/pages/");
       setPages(results);
-      setSelectedSlug((current) =>
-        current && results.some((item) => item.slug === current)
+      setSelectedPageId((current) =>
+        current && results.some((item) => item.publicId === current)
           ? current
-          : (results[0]?.slug ?? null),
+          : (results[0]?.publicId ?? null),
       );
       setError("");
     } catch (requestError) {
@@ -91,7 +90,9 @@ function App() {
   const refreshReusableComponents = useCallback(async () => {
     setLoadingReusableComponents(true);
     try {
-      const results = await apiRequest<ReusableComponentSummary[]>("/api/reusable-components");
+      const results = await apiRequest<ApiResponse<"GetReusableComponents">>(
+        "/api/reusable-components",
+      );
       setReusableComponents(results);
       setSelectedReusableComponentId((current) =>
         current && results.some((item) => item.componentId === current)
@@ -122,7 +123,7 @@ function App() {
 
   useEffect(() => {
     let active = true;
-    if (!selectedSlug) {
+    if (!selectedPageId) {
       setPage(null);
       return () => {
         active = false;
@@ -130,7 +131,9 @@ function App() {
     }
 
     setLoadingPage(true);
-    apiRequest<Page>(`/api/pages/${encodeURIComponent(selectedSlug)}`)
+    apiRequest<ApiResponse<"GetPageByPublicId">>(
+      `/api/pages/by-public-id/${encodeURIComponent(selectedPageId)}`,
+    )
       .then((result) => {
         if (active) {
           setPage(result);
@@ -152,12 +155,12 @@ function App() {
     return () => {
       active = false;
     };
-  }, [selectedSlug, pageRefresh]);
+  }, [selectedPageId, pageRefresh]);
 
   const checkConnection = useCallback(async () => {
     setConnection("checking");
     try {
-      await apiRequest<{ status: string }>("/health");
+      await apiRequest<ApiResponse<"GetHealth">>("/health");
       setConnection("online");
     } catch {
       setConnection("offline");
@@ -242,7 +245,7 @@ function App() {
             slug: values.slug,
             title: values.title,
             isPublished: values.isPublished === "true",
-          };
+          } satisfies ApiRequestBody<"CreatePage"> & ApiRequestBody<"UpdatePage">;
           break;
         case "component":
           if (!editor.id && editor.parentId === undefined) return;
@@ -254,7 +257,7 @@ function App() {
             type: values.type,
             props: JSON.parse(values.props || "{}") as unknown,
             sortOrder: Number(values.sortOrder),
-          };
+          } satisfies ApiRequestBody<"CreateComponent"> & ApiRequestBody<"UpdateComponent">;
           break;
         case "binding":
           if (!editor.id && editor.parentId === undefined) return;
@@ -265,7 +268,7 @@ function App() {
             name: values.name,
             source: values.source,
             config: JSON.parse(values.config || "{}") as unknown,
-          };
+          } satisfies ApiRequestBody<"CreateBinding"> & ApiRequestBody<"UpdateBinding">;
           break;
         case "action":
           if (!editor.id && editor.parentId === undefined) return;
@@ -276,20 +279,31 @@ function App() {
             name: values.name,
             type: values.type,
             config: JSON.parse(values.config || "{}") as unknown,
-          };
+          } satisfies ApiRequestBody<"CreateAction"> & ApiRequestBody<"UpdateAction">;
           break;
       }
 
       setBusy(true);
       setError("");
       setNotice("");
-      const saved = await apiRequest<PageSummary>(path, {
+      const saved = await apiRequest<
+        ApiResponse<
+          | "CreatePage"
+          | "UpdatePage"
+          | "CreateComponent"
+          | "UpdateComponent"
+          | "CreateBinding"
+          | "UpdateBinding"
+          | "CreateAction"
+          | "UpdateAction"
+        >
+      >(path, {
         method,
         body: JSON.stringify(body),
       });
       setEditor(null);
-      if (editor.kind === "page" && "slug" in saved) {
-        setSelectedSlug(saved.slug);
+      if (editor.kind === "page" && "publicId" in saved) {
+        setSelectedPageId(saved.publicId);
         setPageRefresh((count) => count + 1);
         await refreshPages();
       } else {
@@ -309,10 +323,12 @@ function App() {
     setError("");
     setNotice("");
     try {
-      await apiRequest<void>(path, { method: "DELETE" });
+      await apiRequest<
+        ApiResponse<"DeletePage" | "DeleteComponent" | "DeleteBinding" | "DeleteAction">
+      >(path, { method: "DELETE" });
       if (pageDeleted) {
         setPage(null);
-        setSelectedSlug(null);
+        setSelectedPageId(null);
         await refreshPages();
       } else {
         setPageRefresh((count) => count + 1);
@@ -325,7 +341,7 @@ function App() {
     }
   }
 
-  const selectedSummary = pages.find((item) => item.slug === selectedSlug);
+  const selectedSummary = pages.find((item) => item.publicId === selectedPageId);
   const selectedReusableComponent = reusableComponents.find(
     (item) => item.componentId === selectedReusableComponentId,
   );
@@ -401,11 +417,11 @@ function App() {
               <button
                 type="button"
                 key={item.id}
-                className={`page-nav-item${workspaceMode === "pages" && item.slug === selectedSlug ? " active" : ""}`}
+                className={`page-nav-item${workspaceMode === "pages" && item.publicId === selectedPageId ? " active" : ""}`}
                 onClick={() => {
                   setWorkspaceMode("pages");
                   setPreviewPageId(null);
-                  setSelectedSlug(item.slug);
+                  setSelectedPageId(item.publicId);
                 }}
               >
                 <span className="page-nav-title">{item.title}</span>
@@ -614,7 +630,7 @@ function App() {
                 <button
                   className="button button-secondary"
                   type="button"
-                  onClick={() => setSelectedSlug(selectedSummary.slug)}
+                  onClick={() => setSelectedPageId(selectedSummary.publicId)}
                 >
                   Open {selectedSummary.title}
                 </button>
@@ -693,14 +709,17 @@ function ReusableComponentManager({
     setError("");
     setNotice("");
     try {
-      const created = await apiRequest<ReusableComponentDraftResponse>("/api/reusable-components", {
-        method: "POST",
-        body: JSON.stringify({
-          name: newName,
-          locale,
-          content: parseJsonNode(initialContent, "Component content"),
-        }),
-      });
+      const created = await apiRequest<ApiResponse<"CreateReusableComponent">>(
+        "/api/reusable-components",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: newName,
+            locale,
+            content: parseJsonNode(initialContent, "Component content"),
+          } satisfies ApiRequestBody<"CreateReusableComponent">),
+        },
+      );
       setNewName("");
       setName(created.name);
       setContent(jsonText(created.content));
@@ -728,7 +747,7 @@ function ReusableComponentManager({
     setNotice("");
     try {
       if (kind === "draft") {
-        const draft = await apiRequest<ReusableComponentDraftResponse>(
+        const draft = await apiRequest<ApiResponse<"GetReusableComponentDraft">>(
           `/api/reusable-components/${encodeURIComponent(componentId)}/draft?locale=${encodeURIComponent(locale)}`,
         );
         setName(draft.name);
@@ -737,7 +756,7 @@ function ReusableComponentManager({
         setRevision(null);
         setNotice(`Loaded ${draft.locale} draft.`);
       } else {
-        const published = await apiRequest<ReusableComponentResponse>(
+        const published = await apiRequest<ApiResponse<"GetReusableComponent">>(
           `/api/reusable-components/${encodeURIComponent(componentId)}?locale=${encodeURIComponent(locale)}`,
         );
         setName(published.name);
@@ -765,11 +784,13 @@ function ReusableComponentManager({
     setError("");
     setNotice("");
     try {
-      const draft = await apiRequest<ReusableComponentDraftResponse>(
+      const draft = await apiRequest<ApiResponse<"UpdateReusableComponentDraft">>(
         `/api/reusable-components/${encodeURIComponent(componentId)}/draft?locale=${encodeURIComponent(locale)}`,
         {
           method: "PUT",
-          body: JSON.stringify({ content: parseContent() }),
+          body: JSON.stringify({
+            content: parseContent(),
+          } satisfies ApiRequestBody<"UpdateReusableComponentDraft">),
         },
       );
       setContent(jsonText(draft.content));
@@ -791,7 +812,7 @@ function ReusableComponentManager({
     setError("");
     setNotice("");
     try {
-      const published = await apiRequest<ReusableComponentResponse>(
+      const published = await apiRequest<ApiResponse<"PublishReusableComponent">>(
         `/api/reusable-components/${encodeURIComponent(componentId)}/publish?locale=${encodeURIComponent(locale)}`,
         { method: "POST" },
       );
@@ -819,7 +840,7 @@ function ReusableComponentManager({
     setError("");
     setNotice("");
     try {
-      await apiRequest<void>(
+      await apiRequest<ApiResponse<"WithdrawReusableComponent">>(
         `/api/reusable-components/${encodeURIComponent(componentId)}/withdraw`,
         { method: "POST" },
       );
@@ -846,9 +867,12 @@ function ReusableComponentManager({
     setError("");
     setNotice("");
     try {
-      await apiRequest<void>(`/api/reusable-components/${encodeURIComponent(componentId)}`, {
-        method: "DELETE",
-      });
+      await apiRequest<ApiResponse<"DeleteReusableComponent">>(
+        `/api/reusable-components/${encodeURIComponent(componentId)}`,
+        {
+          method: "DELETE",
+        },
+      );
       onSelectComponent(null);
       setContent('{\n  "type": "text",\n  "value": "Reusable content"\n}');
       setContentLoaded(false);
@@ -871,11 +895,11 @@ function ReusableComponentManager({
     setError("");
     setNotice("");
     try {
-      const updated = await apiRequest<ReusableComponentSummary>(
+      const updated = await apiRequest<ApiResponse<"UpdateReusableComponentName">>(
         `/api/reusable-components/${encodeURIComponent(componentId)}`,
         {
           method: "PUT",
-          body: JSON.stringify({ name }),
+          body: JSON.stringify({ name } satisfies ApiRequestBody<"UpdateReusableComponentName">),
         },
       );
       setName(updated.name);
@@ -1098,7 +1122,7 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
     setPublishedContent(null);
     setPublishedContentError("");
     setPublishedContentLoading(true);
-    apiRequest<PageContentResponse>(
+    apiRequest<ApiResponse<"GetPageContent">>(
       `/api/content/pages/${encodeURIComponent(page.publicId)}?locale=${encodeURIComponent(locale)}`,
     )
       .then((result) => {
@@ -1132,7 +1156,7 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
     let active = true;
     setDraftStatus("checking");
     setSections("[]");
-    apiRequest<PageContentDraftResponse>(
+    apiRequest<ApiResponse<"GetPageContentDraft">>(
       `/api/content/pages/${encodeURIComponent(page.publicId)}/draft?locale=${encodeURIComponent(locale)}`,
     )
       .then((draft) => {
@@ -1179,7 +1203,7 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
     setError("");
     setNotice("");
     try {
-      const draft = await apiRequest<PageContentDraftResponse>(
+      const draft = await apiRequest<ApiResponse<"GetPageContentDraft">>(
         `/api/content/pages/${encodeURIComponent(page.publicId)}/draft?locale=${encodeURIComponent(locale)}`,
       );
       setSections(jsonText(draft.sections));
@@ -1202,7 +1226,7 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
     setError("");
     setNotice("");
     try {
-      const draft = await apiRequest<PageContentDraftResponse>(
+      const draft = await apiRequest<ApiResponse<"StartPageDraftFromPublished">>(
         `/api/content/pages/${encodeURIComponent(page.publicId)}/draft/from-published?locale=${encodeURIComponent(locale)}`,
         { method: "POST" },
       );
@@ -1238,11 +1262,13 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
       if (!Array.isArray(parsed)) {
         throw new Error("Page sections must be a JSON array.");
       }
-      const draft = await apiRequest<PageContentDraftResponse>(
+      const draft = await apiRequest<ApiResponse<"UpdatePageContentDraft">>(
         `/api/content/pages/${encodeURIComponent(page.publicId)}/draft?locale=${encodeURIComponent(locale)}`,
         {
           method: "PUT",
-          body: JSON.stringify({ sections: parsed }),
+          body: JSON.stringify({
+            sections: parsed,
+          } satisfies ApiRequestBody<"UpdatePageContentDraft">),
         },
       );
       setSections(jsonText(draft.sections));
@@ -1263,7 +1289,7 @@ function PageContentEditor({ page, components }: PageContentEditorProps) {
     setError("");
     setNotice("");
     try {
-      const published = await apiRequest<PageContentResponse>(
+      const published = await apiRequest<ApiResponse<"PublishPageContent">>(
         `/api/content/pages/${encodeURIComponent(page.publicId)}/publish?locale=${encodeURIComponent(locale)}`,
         { method: "POST" },
       );
@@ -1514,7 +1540,7 @@ export function PublishedPagePreview({ initialPageId, pages, onClose }: Publishe
     setContent(null);
     setError("");
     setActionMessage("");
-    apiRequest<PageContentResponse>(
+    apiRequest<ApiResponse<"GetPageContent">>(
       `/api/content/pages/${encodeURIComponent(pageId)}?locale=${encodeURIComponent(locale)}`,
     )
       .then((result) => {
