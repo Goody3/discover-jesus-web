@@ -57,6 +57,25 @@ describe("apiRequest", () => {
     expect(error.status).toBe(422);
   });
 
+  it("shows field-level Problem Details validation errors", async () => {
+    installFakeApi({
+      "POST /x": {
+        status: 400,
+        body: {
+          title: "One or more validation errors occurred.",
+          errors: {
+            type: ["Type must be a supported component type."],
+            props: ["Props must be a JSON object."],
+          },
+        },
+      },
+    });
+    const error = await failure(apiRequest("/x", { method: "POST", body: "{}" }));
+    expect(error.message).toBe(
+      "type: Type must be a supported component type. props: Props must be a JSON object.",
+    );
+  });
+
   it("falls back to a status message when the error body is not JSON", async () => {
     installFakeApi({ "GET /x": { status: 502, rawBody: "<html>Bad gateway</html>" } });
     const error = await failure(apiRequest("/x"));
