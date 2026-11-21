@@ -56,13 +56,36 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   });
 
   if (!response.ok) {
-    let message = `Request failed (${response.status})`;
+    const defaultMessage = `Request failed (${response.status})`;
+    let message = defaultMessage;
     try {
       const body: unknown = await response.json();
       if (typeof body === "object" && body !== null && "error" in body) {
         const error = body.error;
         if (typeof error === "string") message = error;
-      } else if (
+      }
+
+      if (
+        message === defaultMessage &&
+        typeof body === "object" &&
+        body !== null &&
+        "errors" in body &&
+        typeof body.errors === "object" &&
+        body.errors !== null &&
+        !Array.isArray(body.errors)
+      ) {
+        const fieldErrors = Object.entries(body.errors).flatMap(([field, value]) =>
+          Array.isArray(value)
+            ? value
+                .filter((entry): entry is string => typeof entry === "string")
+                .map((entry) => `${field}: ${entry}`)
+            : [],
+        );
+        if (fieldErrors.length > 0) message = fieldErrors.join(" ");
+      }
+
+      if (
+        message === defaultMessage &&
         typeof body === "object" &&
         body !== null &&
         "title" in body &&
