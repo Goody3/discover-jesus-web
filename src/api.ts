@@ -25,16 +25,35 @@ export type ApiRequestBody<Operation extends keyof operations> = operations[Oper
 export type PageSummary = components["schemas"]["PageSummary"];
 export type Page = components["schemas"]["PageResponse"];
 export type Component = components["schemas"]["ComponentResponse"];
+export type ComponentRequestType = components["schemas"]["ComponentRequest"]["type"];
 export type Binding = components["schemas"]["BindingResponse"];
 export type ActionDefinition = components["schemas"]["ActionResponse"];
+export type AssertionOptions = components["schemas"]["AssertionOptions"];
+export type CredentialCreateOptions = components["schemas"]["CredentialCreateOptions"];
+export type AuthorAssertionCredential = NonNullable<
+  ApiRequestBody<"CompletePasskeySignIn">["credential"]
+>;
+export type AuthorAttestationCredential = NonNullable<
+  ApiRequestBody<"CompleteInvitationPasskeyRegistration">["credential"]
+>;
+export type AuthorAuthenticatedAttestationCredential = NonNullable<
+  ApiRequestBody<"CompleteAdditionalPasskeyRegistration">["credential"]
+>;
 export type PageContentResponse = components["schemas"]["PageContentResponse"];
 export type PageContentDraftResponse = components["schemas"]["PageContentDraftResponse"];
 export type ReusableComponentSummary = components["schemas"]["ReusableComponentSummary"];
 export type ReusableComponentDraftResponse =
   components["schemas"]["ReusableComponentDraftResponse"];
 export type ReusableComponentResponse = components["schemas"]["ReusableComponentResponse"];
+export type AuthorSession = components["schemas"]["AuthorSessionResponse"];
+export type AuthorPasskey = components["schemas"]["AuthorPasskeyResponse"];
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+let csrfToken = "";
+
+export function setAuthorCsrfToken(token: string | null) {
+  csrfToken = token ?? "";
+}
 
 export class ApiRequestError extends Error {
   constructor(
@@ -47,15 +66,24 @@ export class ApiRequestError extends Error {
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const method = (options.method ?? "GET").toUpperCase();
+  const needsCsrfToken = !["GET", "HEAD", "OPTIONS", "TRACE"].includes(method);
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...options,
+    credentials: options.credentials ?? "include",
     headers: {
       ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(needsCsrfToken && csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
       ...options.headers,
     },
   });
 
   if (!response.ok) {
+    if (response.status === 401 && csrfToken && typeof window !== "undefined") {
+      setAuthorCsrfToken(null);
+      window.dispatchEvent(new Event("author-session-expired"));
+    }
+
     const defaultMessage = `Request failed (${response.status})`;
     let message = defaultMessage;
     try {

@@ -1,4 +1,4 @@
-// Generated from Goody3/discover-jesus-backend@f0466e0797e541784ce077245005c62228529361:api/openapi.json.
+// Generated from Goody3/discover-jesus-backend@5722e2d077b50ef1201c12135bfa166ca9616ada:api/openapi.json.
 // Do not edit; run npm run api:generate.
 export interface paths {
   "/api/components/{componentId}/actions": {
@@ -33,6 +33,160 @@ export interface paths {
     post?: never;
     /** Delete an action definition */
     delete: operations["DeleteAction"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/invitations/registration-options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Start passkey enrollment with a one-time operator invitation */
+    post: operations["CreateInvitationPasskeyOptions"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/invitations/registration": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Complete first passkey enrollment for an invited author */
+    post: operations["CompleteInvitationPasskeyRegistration"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/sign-in/options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Start username-less passkey sign-in */
+    post: operations["CreatePasskeySignInOptions"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/sign-in": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Complete username-less passkey sign-in */
+    post: operations["CompletePasskeySignIn"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/session": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get the current author session and a fresh CSRF token */
+    get: operations["GetAuthorSession"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/sign-out": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Revoke the current author session */
+    post: operations["SignOutAuthor"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/passkeys": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List active passkeys for the current author */
+    get: operations["GetAuthorPasskeys"];
+    put?: never;
+    /** Complete registration of an additional passkey */
+    post: operations["CompleteAdditionalPasskeyRegistration"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/passkeys/registration-options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Start registration of an additional passkey */
+    post: operations["CreateAdditionalPasskeyOptions"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/passkeys/{passkeyId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke one active passkey without changing the author account */
+    delete: operations["RevokeAuthorPasskey"];
     options?: never;
     head?: never;
     patch?: never;
@@ -103,6 +257,26 @@ export interface paths {
     };
     /** Check API availability */
     get: operations["GetHealth"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/content/pages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List published pages for a locale
+     * @description Returns reader-facing metadata for pages with a published revision in the requested locale.
+     */
+    get: operations["GetPublishedPages"];
     put?: never;
     post?: never;
     delete?: never;
@@ -192,23 +366,6 @@ export interface paths {
     put?: never;
     /** Create a page */
     post: operations["CreatePage"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/pages/{slug}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get a page and its components, bindings, and actions */
-    get: operations["GetPage"];
-    put?: never;
-    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -364,7 +521,9 @@ export interface components {
     ActionRequest: {
       name: string;
       type: string;
-      config: unknown;
+      config: {
+        [key: string]: unknown;
+      };
     };
     ActionResponse: {
       /** Format: int32 */
@@ -373,10 +532,148 @@ export interface components {
       type: string;
       config: unknown;
     };
+    /**
+     * Format: int32
+     * @enum {integer}
+     */
+    Algorithm: -65535 | -259 | -258 | -257 | -47 | -39 | -38 | -37 | -36 | -35 | -8 | -7;
+    AssertionOptions: {
+      /** Format: byte */
+      challenge?: string | null;
+      /** Format: int64 */
+      timeout?: number;
+      rpId?: string | null;
+      allowCredentials?: components["schemas"]["PublicKeyCredentialDescriptor"][];
+      userVerification?: components["schemas"]["UserVerificationRequirement"];
+      hints?: components["schemas"]["PublicKeyCredentialHint"][];
+      extensions?: components["schemas"]["AuthenticationExtensionsClientInputs"];
+    };
+    AssertionOptionsPasskeyOptionsResponse: {
+      /** Format: uuid */
+      challengeId: string;
+      options: components["schemas"]["AssertionOptions"];
+    };
+    AssertionResponse: {
+      /** Format: byte */
+      authenticatorData: string;
+      /** Format: byte */
+      signature: string;
+      /** Format: byte */
+      clientDataJSON: string;
+      /** Format: byte */
+      userHandle?: string | null;
+    };
+    /** @enum {string} */
+    AttestationConveyancePreference: "none" | "indirect" | "direct" | "enterprise";
+    AttestationResponse: {
+      /** Format: byte */
+      attestationObject: string | null;
+      /** Format: byte */
+      clientDataJSON: string | null;
+      transports: components["schemas"]["AuthenticatorTransport"][];
+    };
+    /** @enum {string} */
+    AttestationStatementFormatIdentifier:
+      "packed" | "tpm" | "android-key" | "android-safetynet" | "fido-u2f" | "apple" | "none";
+    AuthenticationExtensionsClientInputs: {
+      "example.extension.bool"?: boolean | null;
+      appid?: string | null;
+      exts?: boolean | null;
+      uvm?: boolean | null;
+      credProps?: boolean | null;
+      prf?: components["schemas"]["AuthenticationExtensionsPRFInputs"];
+      largeBlob?: components["schemas"]["AuthenticationExtensionsLargeBlobInputs"];
+      credentialProtectionPolicy?: components["schemas"]["CredentialProtectionPolicy"];
+      enforceCredentialProtectionPolicy?: boolean | null;
+    };
+    AuthenticationExtensionsClientOutputs: {
+      "example.extension.bool"?: boolean | null;
+      appid?: boolean;
+      exts?: string[] | null;
+      uvm?: number[][] | null;
+      credProps?: components["schemas"]["CredentialPropertiesOutput"];
+      prf?: components["schemas"]["AuthenticationExtensionsPRFOutputs"];
+      largeBlob?: components["schemas"]["AuthenticationExtensionsLargeBlobOutputs"];
+      credProtect?: components["schemas"]["CredentialProtectionPolicy"];
+    };
+    AuthenticationExtensionsLargeBlobInputs: {
+      support?: components["schemas"]["LargeBlobSupport"];
+      read?: boolean;
+      /** Format: byte */
+      write?: string | null;
+    };
+    AuthenticationExtensionsLargeBlobOutputs: {
+      supported?: boolean;
+      /** Format: byte */
+      blob?: string | null;
+      written?: boolean;
+    };
+    AuthenticationExtensionsPRFInputs: {
+      eval?: components["schemas"]["AuthenticationExtensionsPRFValues"];
+      evalByCredential?: components["schemas"]["StringAuthenticationExtensionsPRFValuesKeyValuePair"];
+    };
+    AuthenticationExtensionsPRFOutputs: {
+      enabled?: boolean;
+      results?: components["schemas"]["AuthenticationExtensionsPRFValues"];
+    };
+    AuthenticationExtensionsPRFValues: {
+      /** Format: byte */
+      first: string;
+      /** Format: byte */
+      second?: string | null;
+    };
+    AuthenticatorAssertionRawResponse: {
+      id: string;
+      /** Format: byte */
+      rawId: string;
+      response?: components["schemas"]["AssertionResponse"];
+      type: components["schemas"]["PublicKeyCredentialType"];
+      extensions?: components["schemas"]["AuthenticationExtensionsClientOutputs"];
+      clientExtensionResults: components["schemas"]["AuthenticationExtensionsClientOutputs"];
+    };
+    /** @enum {string} */
+    AuthenticatorAttachment: "platform" | "cross-platform";
+    AuthenticatorAttestationRawResponse: {
+      id: string;
+      /** Format: byte */
+      rawId: string;
+      type: components["schemas"]["PublicKeyCredentialType"];
+      response: components["schemas"]["AttestationResponse"];
+      extensions?: components["schemas"]["AuthenticationExtensionsClientOutputs"];
+      clientExtensionResults: components["schemas"]["AuthenticationExtensionsClientOutputs"];
+    };
+    AuthenticatorSelection: {
+      authenticatorAttachment?: components["schemas"]["AuthenticatorAttachment"];
+      residentKey?: components["schemas"]["ResidentKeyRequirement"];
+      /** @deprecated */
+      requireResidentKey?: boolean;
+      userVerification?: components["schemas"]["UserVerificationRequirement"];
+    };
+    /** @enum {string} */
+    AuthenticatorTransport: "usb" | "nfc" | "ble" | "smart-card" | "hybrid" | "internal";
+    AuthorPasskeyResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      lastUsedAt: string | null;
+      /** Format: date-time */
+      revokedAt: string | null;
+    };
+    AuthorSessionResponse: {
+      /** Format: uuid */
+      accountId: string;
+      roles: string[];
+      csrfToken: string;
+    };
     BindingRequest: {
       name: string;
       source: string;
-      config: unknown;
+      config: {
+        [key: string]: unknown;
+      };
     };
     BindingResponse: {
       /** Format: int32 */
@@ -385,10 +682,51 @@ export interface components {
       source: string;
       config: unknown;
     };
+    CompleteAuthenticatedRegistrationRequest: {
+      /** Format: uuid */
+      challengeId?: string;
+      name?: string;
+      credential?: components["schemas"]["AuthenticatorAttestationRawResponse"];
+    };
+    CompleteInvitationRegistrationRequest: {
+      /** Format: uuid */
+      challengeId?: string;
+      invitationToken?: string;
+      name?: string;
+      credential?: components["schemas"]["AuthenticatorAttestationRawResponse"];
+    };
+    CompleteSignInRequest: {
+      /** Format: uuid */
+      challengeId?: string;
+      credential?: components["schemas"]["AuthenticatorAssertionRawResponse"];
+    };
     ComponentRequest: {
       key: string;
-      type: string;
-      props: unknown;
+      /** @enum {string} */
+      type:
+        | "text"
+        | "image"
+        | "button"
+        | "stack"
+        | "row"
+        | "column"
+        | "conditional"
+        | "loop"
+        | "spacer"
+        | "divider"
+        | "modal"
+        | "Button"
+        | "NBButton"
+        | "Text"
+        | "Header"
+        | "BibleVerse"
+        | "title"
+        | "List"
+        | "NavBar"
+        | "Media";
+      props: {
+        [key: string]: unknown;
+      };
       /** Format: int32 */
       sortOrder: number;
     };
@@ -406,7 +744,44 @@ export interface components {
     CreateReusableComponentRequest: {
       name?: string;
       locale?: string;
-      content?: unknown;
+      content?: {
+        [key: string]: unknown;
+      };
+    };
+    CredentialCreateOptions: {
+      rp: components["schemas"]["PublicKeyCredentialRpEntity"];
+      user: components["schemas"]["Fido2User"];
+      /** Format: byte */
+      challenge: string;
+      pubKeyCredParams: components["schemas"]["PubKeyCredParam"][];
+      /** Format: int64 */
+      timeout?: number;
+      attestation?: components["schemas"]["AttestationConveyancePreference"];
+      attestationFormats?: components["schemas"]["AttestationStatementFormatIdentifier"][];
+      authenticatorSelection?: components["schemas"]["AuthenticatorSelection"];
+      hints?: components["schemas"]["PublicKeyCredentialHint"][];
+      excludeCredentials?: components["schemas"]["PublicKeyCredentialDescriptor"][];
+      extensions?: components["schemas"]["AuthenticationExtensionsClientInputs"];
+    };
+    CredentialCreateOptionsPasskeyOptionsResponse: {
+      /** Format: uuid */
+      challengeId: string;
+      options: components["schemas"]["CredentialCreateOptions"];
+    };
+    CredentialPropertiesOutput: {
+      rk?: boolean;
+      authenticatorDisplayName?: string | null;
+    };
+    /** @enum {string} */
+    CredentialProtectionPolicy:
+      | "userVerificationOptional"
+      | "userVerificationOptionalWithCredentialIDList"
+      | "userVerificationRequired";
+    Fido2User: {
+      name?: string | null;
+      /** Format: byte */
+      id?: string | null;
+      displayName?: string | null;
     };
     HealthResponse: {
       status: string;
@@ -424,6 +799,11 @@ export interface components {
     } & {
       [key: string]: unknown;
     };
+    InvitationRegistrationOptionsRequest: {
+      invitationToken?: string;
+    };
+    /** @enum {string} */
+    LargeBlobSupport: "required" | "preferred";
     PageContentDraftResponse: {
       /** Format: uuid */
       pageId: string;
@@ -465,6 +845,43 @@ export interface components {
       title: string;
       isPublished: boolean;
     };
+    ProblemDetails: {
+      type?: string | null;
+      title?: string | null;
+      /** Format: int32 */
+      status?: number | null;
+      detail?: string | null;
+      instance?: string | null;
+    } & {
+      [key: string]: unknown;
+    };
+    PubKeyCredParam: {
+      type?: components["schemas"]["PublicKeyCredentialType"];
+      alg?: components["schemas"]["Algorithm"];
+    };
+    PublicKeyCredentialDescriptor: {
+      type?: components["schemas"]["PublicKeyCredentialType"];
+      /** Format: byte */
+      id?: string;
+      transports?: components["schemas"]["AuthenticatorTransport"][] | null;
+    };
+    /** @enum {string} */
+    PublicKeyCredentialHint: "security-key" | "client-device" | "hybrid";
+    PublicKeyCredentialRpEntity: {
+      id?: string;
+      name?: string;
+      icon?: string | null;
+    };
+    /** @enum {string} */
+    PublicKeyCredentialType: "public-key" | "invalid";
+    PublishedPageSummary: {
+      /** Format: uuid */
+      publicId: string;
+      slug: string;
+      title: string;
+    };
+    /** @enum {string} */
+    ResidentKeyRequirement: "required" | "preferred" | "discouraged";
     ReusableComponentDraftResponse: {
       /** Format: uuid */
       componentId: string;
@@ -493,15 +910,25 @@ export interface components {
       /** Format: date-time */
       createdAt: string;
     };
+    StringAuthenticationExtensionsPRFValuesKeyValuePair: {
+      key?: string | null;
+      value?: components["schemas"]["AuthenticationExtensionsPRFValues"];
+    };
     UpdatePageContentDraftRequest: {
-      sections?: unknown;
+      sections?: {
+        [key: string]: unknown;
+      }[];
     };
     UpdateReusableComponentDraftRequest: {
-      content?: unknown;
+      content?: {
+        [key: string]: unknown;
+      };
     };
     UpdateReusableComponentNameRequest: {
       name?: string;
     };
+    /** @enum {string} */
+    UserVerificationRequirement: "required" | "preferred" | "discouraged";
   };
   responses: never;
   parameters: never;
@@ -543,7 +970,10 @@ export interface operations {
   CreateAction: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         componentId: number;
       };
@@ -621,7 +1051,10 @@ export interface operations {
   UpdateAction: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         id: number;
       };
@@ -670,7 +1103,10 @@ export interface operations {
   DeleteAction: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         id: number;
       };
@@ -691,6 +1127,419 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  CreateInvitationPasskeyOptions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["InvitationRegistrationOptionsRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CredentialCreateOptionsPasskeyOptionsResponse"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+    };
+  };
+  CompleteInvitationPasskeyRegistration: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompleteInvitationRegistrationRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthorSessionResponse"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+    };
+  };
+  CreatePasskeySignInOptions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssertionOptionsPasskeyOptionsResponse"];
+        };
+      };
+    };
+  };
+  CompletePasskeySignIn: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompleteSignInRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthorSessionResponse"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+    };
+  };
+  GetAuthorSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthorSessionResponse"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+    };
+  };
+  SignOutAuthor: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+    };
+  };
+  GetAuthorPasskeys: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthorPasskeyResponse"][];
+        };
+      };
+    };
+  };
+  CompleteAdditionalPasskeyRegistration: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompleteAuthenticatedRegistrationRequest"];
+      };
+    };
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+    };
+  };
+  CreateAdditionalPasskeyOptions: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CredentialCreateOptionsPasskeyOptionsResponse"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+    };
+  };
+  RevokeAuthorPasskey: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
+      path: {
+        passkeyId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetails"];
+        };
       };
     };
   };
@@ -726,7 +1575,10 @@ export interface operations {
   CreateBinding: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         componentId: number;
       };
@@ -804,7 +1656,10 @@ export interface operations {
   UpdateBinding: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         id: number;
       };
@@ -853,7 +1708,10 @@ export interface operations {
   DeleteBinding: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         id: number;
       };
@@ -909,7 +1767,10 @@ export interface operations {
   UpdateComponent: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         id: number;
       };
@@ -958,7 +1819,10 @@ export interface operations {
   DeleteComponent: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         id: number;
       };
@@ -998,6 +1862,37 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["HealthResponse"];
+        };
+      };
+    };
+  };
+  GetPublishedPages: {
+    parameters: {
+      query: {
+        locale: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublishedPageSummary"][];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
         };
       };
     };
@@ -1094,7 +1989,10 @@ export interface operations {
       query: {
         locale: string;
       };
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         pageId: string;
       };
@@ -1145,7 +2043,10 @@ export interface operations {
       query: {
         locale: string;
       };
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         pageId: string;
       };
@@ -1192,7 +2093,10 @@ export interface operations {
       query: {
         locale: string;
       };
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         pageId: string;
       };
@@ -1264,7 +2168,10 @@ export interface operations {
   CreatePage: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -1294,35 +2201,6 @@ export interface operations {
       };
       /** @description Conflict */
       409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  GetPage: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["PageResponse"];
-        };
-      };
-      /** @description Not Found */
-      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -1362,7 +2240,10 @@ export interface operations {
   UpdatePage: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         id: number;
       };
@@ -1411,7 +2292,10 @@ export interface operations {
   DeletePage: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         id: number;
       };
@@ -1467,7 +2351,10 @@ export interface operations {
   CreateComponent: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         pageId: number;
       };
@@ -1536,7 +2423,10 @@ export interface operations {
   CreateReusableComponent: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -1623,7 +2513,10 @@ export interface operations {
   UpdateReusableComponentName: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         componentId: string;
       };
@@ -1672,7 +2565,10 @@ export interface operations {
   DeleteReusableComponent: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         componentId: string;
       };
@@ -1748,7 +2644,10 @@ export interface operations {
       query: {
         locale: string;
       };
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         componentId: string;
       };
@@ -1799,7 +2698,10 @@ export interface operations {
       query: {
         locale: string;
       };
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         componentId: string;
       };
@@ -1851,7 +2753,10 @@ export interface operations {
   WithdrawReusableComponent: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        /** @description Session-bound CSRF token returned by GET /api/auth/session. */
+        "X-CSRF-Token": string;
+      };
       path: {
         componentId: string;
       };

@@ -10,13 +10,21 @@ it("derives successful responses from their HTTP operations", () => {
   >();
 });
 
-it("keeps typed requests and opaque JSON distinct", () => {
+it("keeps typed requests and open JSON objects distinct", () => {
   expectTypeOf<ApiRequestBody<"CreatePage">>().toEqualTypeOf<{
     slug: string;
     title: string;
     isPublished: boolean;
   }>();
-  expectTypeOf<ApiRequestBody<"CreateComponent">["props"]>().toEqualTypeOf<unknown>();
+  expectTypeOf<ApiRequestBody<"CreateComponent">["props"]>().toEqualTypeOf<
+    Record<string, unknown>
+  >();
+  expectTypeOf<ApiRequestBody<"CreateBinding">["config"]>().toEqualTypeOf<
+    Record<string, unknown>
+  >();
+  expectTypeOf<ApiRequestBody<"CreateReusableComponent">["content"]>().toEqualTypeOf<
+    Record<string, unknown> | undefined
+  >();
   expectTypeOf<Component["props"]>().toEqualTypeOf<unknown>();
   expectTypeOf<ApiResponse<"GetPageContent">["sections"]>().toEqualTypeOf<unknown>();
   expectTypeOf<ApiResponse<"GetReusableComponent">["content"]>().toEqualTypeOf<unknown>();

@@ -9,6 +9,7 @@ export interface PreviewAction {
 }
 
 export interface PreviewNode {
+  [key: string]: unknown;
   type: string;
   value?: unknown;
   src?: unknown;
