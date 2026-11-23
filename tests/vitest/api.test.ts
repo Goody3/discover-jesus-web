@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiRequestError, apiRequest } from "../../src/api";
+import { ApiRequestError, apiRequest, setAuthorCsrfToken } from "../../src/api";
 import { installFakeApi } from "./fakeApi";
 
 afterEach(() => {
@@ -34,6 +34,17 @@ describe("apiRequest", () => {
     const [, postInit] = fetchMock.mock.calls[1];
     expect(getInit?.headers).toEqual({});
     expect(postInit?.headers).toEqual({ "Content-Type": "application/json" });
+  });
+
+  it("sends credentialed requests and the session CSRF token on mutations", async () => {
+    const { fetchMock } = installFakeApi({ "POST /api/pages/": { body: {} } });
+    setAuthorCsrfToken("session-csrf-token");
+
+    await apiRequest("/api/pages/", { method: "POST", body: "{}" });
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init?.credentials).toBe("include");
+    expect(new Headers(init?.headers).get("X-CSRF-Token")).toBe("session-csrf-token");
   });
 
   it("returns undefined for 204 responses", async () => {

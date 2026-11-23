@@ -2,21 +2,26 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ApiRequestError,
   apiRequest,
+  setAuthorCsrfToken,
   type ApiRequestBody,
   type ApiResponse,
   type ActionDefinition,
+  type AuthorSession,
   type Binding,
   type Component,
+  type ComponentRequestType,
   type PageContentResponse,
   type Page,
   type PageSummary,
   type ReusableComponentSummary,
 } from "./api";
+import { AuthorAccess, PasskeyManager } from "./AuthorAccess";
 import {
   parseJsonNode,
   renderPreviewNode,
   resolvePageNavigation,
   type PreviewAction,
+  type PreviewNode,
 } from "./preview";
 
 type EditorKind = "page" | "component" | "binding" | "action";
@@ -31,9 +36,51 @@ interface EditorModal {
 
 const emptyMessage = "Nothing here yet. Add your first item to get started.";
 type WorkspaceMode = "pages" | "reusable-components";
+const componentTypes = [
+  "text",
+  "image",
+  "button",
+  "stack",
+  "row",
+  "column",
+  "conditional",
+  "loop",
+  "spacer",
+  "divider",
+  "modal",
+  "Button",
+  "NBButton",
+  "Text",
+  "Header",
+  "BibleVerse",
+  "title",
+  "List",
+  "NavBar",
+  "Media",
+] satisfies readonly ComponentRequestType[];
 
 function jsonText(value: unknown): string {
   return JSON.stringify(value === undefined ? {} : value, null, 2);
+}
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseJsonObject(value: string, label: string): Record<string, unknown> {
+  const parsed: unknown = JSON.parse(value || "{}");
+  if (!isJsonObject(parsed)) {
+    throw new Error(`${label} must be a JSON object.`);
+  }
+  return parsed;
+}
+
+function parseComponentType(value: string): ComponentRequestType {
+  const componentType = componentTypes.find((type) => type === value);
+  if (!componentType) {
+    throw new Error("Choose a supported component type.");
+  }
+  return componentType;
 }
 
 function collectSourceComponentIds(value: unknown, ids = new Set<string>()): Set<string> {
@@ -50,6 +97,87 @@ function collectSourceComponentIds(value: unknown, ids = new Set<string>()): Set
 }
 
 function App() {
+  const [session, setSession] = useState<AuthorSession | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [sessionError, setSessionError] = useState("");
+  const [invitationToken] = useState(
+    () => new URLSearchParams(window.location.hash.slice(1)).get("invite") ?? "",
+  );
+
+  const checkSession = useCallback(async () => {
+    setCheckingSession(true);
+    try {
+      const current = await apiRequest<ApiResponse<"GetAuthorSession">>("/api/auth/session");
+      setAuthorCsrfToken(current.csrfToken);
+      setSession(current);
+      setSessionError("");
+    } catch (requestError) {
+      if (requestError instanceof ApiRequestError && requestError.status === 401) {
+        setSession(null);
+        setSessionError("");
+      } else {
+        setSessionError(
+          requestError instanceof Error ? requestError.message : "Unable to check author access.",
+        );
+      }
+    } finally {
+      setCheckingSession(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void checkSession();
+    const expireSession = () => {
+      setAuthorCsrfToken(null);
+      setSession(null);
+      setSessionError("Your author session expired. Sign in again.");
+    };
+    window.addEventListener("author-session-expired", expireSession);
+    return () => window.removeEventListener("author-session-expired", expireSession);
+  }, [checkSession]);
+
+  function acceptSession(current: AuthorSession) {
+    setAuthorCsrfToken(current.csrfToken);
+    setSession(current);
+    setSessionError("");
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+
+  if (checkingSession) {
+    return (
+      <main className="author-access-shell">
+        <p role="status">Checking author session…</p>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <AuthorAccess
+        invitationToken={invitationToken}
+        message={sessionError}
+        onAuthenticated={acceptSession}
+      />
+    );
+  }
+
+  return (
+    <StudioWorkspace
+      session={session}
+      onSignedOut={() => {
+        setAuthorCsrfToken(null);
+        setSession(null);
+      }}
+    />
+  );
+}
+
+interface StudioWorkspaceProps {
+  session: AuthorSession;
+  onSignedOut: () => void;
+}
+
+function StudioWorkspace({ session, onSignedOut }: StudioWorkspaceProps) {
   const [pages, setPages] = useState<PageSummary[]>([]);
   const [reusableComponents, setReusableComponents] = useState<ReusableComponentSummary[]>([]);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
@@ -68,6 +196,8 @@ function App() {
   const [notice, setNotice] = useState("");
   const [pageRefresh, setPageRefresh] = useState(0);
   const [connection, setConnection] = useState<"checking" | "online" | "offline">("checking");
+  const [showPasskeyManager, setShowPasskeyManager] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   const refreshPages = useCallback(async () => {
     setLoadingPages(true);
@@ -79,7 +209,6 @@ function App() {
           ? current
           : (results[0]?.publicId ?? null),
       );
-      setError("");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Unable to load pages.");
     } finally {
@@ -101,7 +230,6 @@ function App() {
             results[0]?.componentId ??
             null),
       );
-      setError("");
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -228,6 +356,21 @@ function App() {
     });
   }
 
+  async function signOut() {
+    setSigningOut(true);
+    setError("");
+    try {
+      await apiRequest<ApiResponse<"SignOutAuthor">>("/api/auth/sign-out", {
+        method: "POST",
+      });
+      onSignedOut();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to sign out.");
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
   async function saveEditor(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editor) return;
@@ -254,8 +397,8 @@ function App() {
             : `/api/pages/${editor.parentId}/components`;
           body = {
             key: values.key,
-            type: values.type,
-            props: JSON.parse(values.props || "{}") as unknown,
+            type: parseComponentType(values.type),
+            props: parseJsonObject(values.props, "Properties"),
             sortOrder: Number(values.sortOrder),
           } satisfies ApiRequestBody<"CreateComponent"> & ApiRequestBody<"UpdateComponent">;
           break;
@@ -267,7 +410,7 @@ function App() {
           body = {
             name: values.name,
             source: values.source,
-            config: JSON.parse(values.config || "{}") as unknown,
+            config: parseJsonObject(values.config, "Configuration"),
           } satisfies ApiRequestBody<"CreateBinding"> & ApiRequestBody<"UpdateBinding">;
           break;
         case "action":
@@ -278,7 +421,7 @@ function App() {
           body = {
             name: values.name,
             type: values.type,
-            config: JSON.parse(values.config || "{}") as unknown,
+            config: parseJsonObject(values.config, "Configuration"),
           } satisfies ApiRequestBody<"CreateAction"> & ApiRequestBody<"UpdateAction">;
           break;
       }
@@ -432,6 +575,27 @@ function App() {
         </nav>
 
         <div className="sidebar-footer">
+          <div className="author-session-summary">
+            <span>Signed in</span>
+            <strong>{session.roles.join(" · ")}</strong>
+            <div className="author-session-actions">
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => setShowPasskeyManager(true)}
+              >
+                Passkeys
+              </button>
+              <button
+                type="button"
+                className="text-button"
+                disabled={signingOut}
+                onClick={() => void signOut()}
+              >
+                {signingOut ? "Signing out…" : "Sign out"}
+              </button>
+            </div>
+          </div>
           <span className={`connection-dot ${connection}`} />
           <span>API {connection === "checking" ? "checking" : connection}</span>
           <button type="button" className="text-button" onClick={() => void checkConnection()}>
@@ -658,6 +822,7 @@ function App() {
           }
         />
       )}
+      {showPasskeyManager && <PasskeyManager onClose={() => setShowPasskeyManager(false)} />}
     </div>
   );
 }
@@ -699,7 +864,7 @@ function ReusableComponentManager({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedComponent?.componentId]);
 
-  function parseContent(): unknown {
+  function parseContent(): PreviewNode {
     return parseJsonNode(content, "Component content");
   }
 
@@ -1931,7 +2096,21 @@ function EditorDialog({ editor, busy, onClose, onSave, onChange }: EditorDialogP
             {editor.kind === "component" && (
               <>
                 {input("Component key", "key", "hero")}
-                {input("Component type", "type", "Hero")}
+                <label className="form-field">
+                  <span>Component type</span>
+                  <select
+                    required
+                    value={field("type")}
+                    onChange={(event) => onChange("type", event.target.value)}
+                  >
+                    <option value="">Choose a type</option>
+                    {componentTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <label className="form-field">
                   <span>Sort order</span>
                   <input
